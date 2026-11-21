@@ -10,6 +10,7 @@ DATA_DIR = ROOT / "datasets"
 
 FILES = {
     "comparacao": "final_model_comparison_groups_h3_summary.csv",
+    "predicoes": "final_model_comparison_groups_h3_predictions.csv",
     "segmentos": "final_model_comparison_groups_h3_segment_summary.csv",
     "efeito_grupos": "final_model_comparison_groups_h3_grouping_effect.csv",
     "folds": "final_model_comparison_groups_h3_folds.csv",
@@ -19,7 +20,9 @@ FILES = {
     "validacao_residuos": "validation_target_specific_residual_h3_summary.csv",
     "diagnosticos": "diagnostics_ridge_h3_diagnostics.csv",
     "vif": "diagnostics_ridge_h3_vif.csv",
-    "importancia": "diagnostics_ridge_h3_importance.csv",
+    "importancia": "final_model_comparison_groups_h3_ebm_importance.csv",
+    "autocorrelacao": "diagnostics_ridge_h3_temporal_error_autocorrelation.csv",
+    "forma_residuo": "diagnostics_ridge_h3_residual_shape_by_fitted_decile.csv",
     "contagem": "validation_explainable_count_models_h3_comparison.csv",
 }
 
@@ -32,7 +35,7 @@ st.set_page_config(
 
 
 @st.cache_data(show_spinner=False)
-def load_csv(filename: str) -> pd.DataFrame | None:
+def load_csv(filename: str, modified_ns: int | None) -> pd.DataFrame | None:
     path = DATA_DIR / filename
     if not path.exists():
         return None
@@ -43,7 +46,13 @@ def load_csv(filename: str) -> pd.DataFrame | None:
         return None
 
 
-data = {key: load_csv(filename) for key, filename in FILES.items()}
+data = {
+    key: load_csv(
+        filename,
+        (DATA_DIR / filename).stat().st_mtime_ns if (DATA_DIR / filename).exists() else None,
+    )
+    for key, filename in FILES.items()
+}
 
 
 def get_data(key: str) -> pd.DataFrame:
@@ -61,19 +70,49 @@ def pct(value, digits=1) -> str:
     return fmt(value, digits, "%")
 
 
+def model_label(name: str) -> str:
+    if name == "EWM3":
+        return "Baseline EWM3"
+    if name == "media_historica_fixa":
+        return "Baseline média histórica fixa"
+    residual = "_resid_" in name
+    if residual:
+        algorithm, strategy = name.split("_resid_", 1)
+        prefix = f"{algorithm} · correção do resíduo EWM3 · "
+    else:
+        suffixes = ["_grupos_mesmo_modelo", "_alto_HurdleNB_baixo", "_global"]
+        suffix = next((value for value in suffixes if name.endswith(value)), None)
+        algorithm = name[:-len(suffix)] if suffix else name
+        strategy = suffix[1:] if suffix else name
+        prefix = f"{algorithm} · previsão direta · "
+    strategies = {
+        "global": "global",
+        "grupos_mesmo_modelo": "um modelo por grupo",
+        "alto_HurdleNB_baixo": "grupo alto + Hurdle no baixo",
+    }
+    if strategy == "alto_HurdleNB_baixo":
+        return prefix + strategies[strategy]
+    if strategy.endswith("_alto_HurdleNB_baixo"):
+        return prefix + strategies["alto_HurdleNB_baixo"]
+    return prefix + strategies.get(strategy, strategy)
+
+
 st.title("Painel dos resultados")
 st.caption(
-    "Previsão de risco criminal por célula H3 · validação temporal · "
-    "período de treino de 2023 a junho de 2025; 2022 não entra no treino."
+    "Previsão de risco criminal por célula H3 · validação temporal e teste reservado · "
+    "treino de jan/2023 a jun/2025; teste reservado de jul/2025 a jun/2026. 2022 não entra no treino."
 )
 
-comparison = get_data("comparacao")
-if comparison.empty:
+comparison_all = get_data("comparacao")
+if comparison_all.empty:
     st.error(
         "Ainda não encontrei os resultados da comparação principal. Execute "
         "`final_model_comparison_groups_h3.ipynb` e confira se os CSVs estão em `datasets/`."
     )
     st.stop()
+comparison = comparison_all
+if "avaliacao" in comparison:
+    comparison = comparison[comparison.avaliacao.eq("validacao_temporal")].copy()
 
 targets = [t for t in ["RISCO_CRIME", "RISCO_ROUBO", "RISCO_FURTO"] if t in comparison["target"].unique()]
 target_labels = {
@@ -92,8 +131,8 @@ with st.sidebar:
     st.divider()
     st.caption("Os gráficos usam os CSVs gerados pelos notebooks. Reexecute o app depois de atualizar esses arquivos.")
 
-overview, groups_tab, ewm_tab, explain_tab, validation_tab, files_tab = st.tabs(
-    ["Visão geral", "Grupos", "EWM3", "Explicabilidade", "Validações", "Arquivos"]
+overview, test_tab, groups_tab, ewm_tab, explain_tab, validation_tab, files_tab = st.tabs(
+    ["Visão geral", "Teste reservado", "Grupos", "EWM3", "Explicabilidade", "Validações", "Arquivos"]
 )
 
 
@@ -120,6 +159,7 @@ with overview:
             st.success(f"Para {target_labels.get(target, target)}, o melhor modelo desta comparação superou o EWM3 na média dos folds.")
         else:
             st.info(f"Para {target_labels.get(target, target)}, nenhum modelo testado superou o EWM3 na média dos folds.")
+    st.caption("As variantes de resíduos aprendem o erro restante depois do EWM3 e somam a correção à previsão. Ridge_log1p não tem variante residual: o resíduo pode ser negativo, então log1p não se aplica a ele.")
 
     st.subheader("Comparação dos modelos")
     chart = target_results.sort_values("RMSE_risco_medio", ascending=True)
@@ -164,6 +204,67 @@ with overview:
     st.caption("RMSE e MAE são calculados no score de risco. Ganho positivo indica erro menor que a referência.")
 
 
+with test_tab:
+    st.subheader("Resultado no conjunto reservado")
+    reserved_results = comparison_all
+    if "avaliacao" in reserved_results:
+        reserved_results = reserved_results[reserved_results.avaliacao.eq("teste_reservado")]
+    reserved_results = reserved_results[reserved_results.target == target] if not reserved_results.empty else reserved_results
+    if reserved_results.empty:
+        st.warning("O teste reservado ainda não foi calculado. Execute `python processing_datasets/final_model_comparison_groups_h3.py --reserved-test-only` na raiz do projeto.")
+    else:
+        final_rows = reserved_results[~reserved_results.modelo.isin(["EWM3", "media_historica_fixa", "EWM3_alto_HurdleNB_baixo"])]
+        if final_rows.empty:
+            st.warning("Não encontrei o modelo final selecionado para este alvo.")
+        else:
+            final_row = final_rows.iloc[0]
+            selected_final_model = final_row.modelo
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Modelo escolhido na validação", model_label(selected_final_model))
+            c2.metric("RMSE no teste", fmt(final_row.RMSE_risco_medio))
+            c3.metric("Ganho vs EWM3", pct(final_row.ganho_medio_vs_EWM3_pct))
+            c4.metric("Meses reservados", str(final_row.meses_teste))
+
+            st.dataframe(reserved_results[[
+                "modelo", "RMSE_risco_medio", "MAE_risco_medio",
+                "ganho_medio_vs_EWM3_pct", "ganho_medio_vs_media_fixa_pct",
+                "n_teste", "H3_teste", "meses_teste",
+            ]].rename(columns={
+                "modelo": "Modelo", "RMSE_risco_medio": "RMSE no teste",
+                "MAE_risco_medio": "MAE no teste", "ganho_medio_vs_EWM3_pct": "Ganho vs EWM3 (%)",
+                "ganho_medio_vs_media_fixa_pct": "Ganho vs média fixa (%)",
+                "n_teste": "Registros", "H3_teste": "Células H3", "meses_teste": "Meses",
+            }), hide_index=True, use_container_width=True)
+
+            pred = get_data("predicoes")
+            if not pred.empty and "particao" in pred:
+                pred = pred[(pred.particao == "teste_reservado") & (pred.target == target)].copy()
+            if not pred.empty:
+                pred["DATA"] = pd.to_datetime(pred["DATA"])
+                model_col = f"pred_{selected_final_model}"
+                if model_col in pred:
+                    series = {
+                        "EWM3": "pred_EWM3",
+                        "Média histórica fixa": "pred_media_historica_fixa",
+                        model_label(selected_final_model): model_col,
+                    }
+                    monthly = []
+                    for month, month_data in pred.groupby("DATA"):
+                        for label, col in series.items():
+                            if col in month_data and month_data[col].notna().any():
+                                monthly.append({"mês": pd.to_datetime(month), "modelo": label,
+                                                "RMSE": ((month_data.y_risco - month_data[col]) ** 2).mean() ** .5})
+                    monthly = pd.DataFrame(monthly)
+                    if not monthly.empty:
+                        st.markdown("**RMSE por mês do teste reservado**")
+                        fig = px.line(monthly, x="mês", y="RMSE", color="modelo", markers=True,
+                                      labels={"mês": "Mês", "RMSE": "RMSE do risco", "modelo": "Previsão"})
+                        st.plotly_chart(fig, use_container_width=True)
+                        st.dataframe(monthly.pivot(index="mês", columns="modelo", values="RMSE").reset_index(),
+                                     hide_index=True, use_container_width=True)
+            st.info("O modelo foi ajustado uma vez com jan/2023–jun/2025. O teste cobre jul/2025–jun/2026. A avaliação é rolling de um mês à frente: observações anteriores dentro do período reservado atualizam as features históricas, mas não há novo ajuste do modelo.")
+
+
 with groups_tab:
     st.subheader("O que a divisão entre células de alta e baixa atividade mudou?")
     grouping = get_data("efeito_grupos")
@@ -205,16 +306,24 @@ with groups_tab:
     segment = get_data("segmentos")
     segment = segment[segment["target"] == target] if not segment.empty else segment
     if not segment.empty:
+        st.info(
+            "Este gráfico separa a **avaliação** por faixa de atividade. "
+            "Escolher `EBM_global` significa que um único EBM foi treinado com todas as células; "
+            "as barras `alto` e `baixo` apenas medem como esse mesmo modelo foi em cada recorte. "
+            "A barra `todos` mede o erro no conjunto completo. Modelos com nomes como "
+            "`EBM_grupos_mesmo_modelo` ou `EBM_alto_HurdleNB_baixo` usam estratégias separadas por grupo."
+        )
         models = sorted(segment["modelo"].dropna().unique())
-        selected_model = st.selectbox("Ver erro por grupo para", models, key="segment_model")
+        selected_model = st.selectbox("Modelo a avaliar", models, key="segment_model")
         rows = segment[segment["modelo"] == selected_model]
         fig = px.bar(
             rows,
             x="segmento",
             y="RMSE_risco_medio",
             color="segmento",
-            labels={"segmento": "Grupo", "RMSE_risco_medio": "RMSE médio do risco"},
+            labels={"segmento": "Recorte avaliado", "RMSE_risco_medio": "RMSE médio do risco"},
         )
+        fig.update_layout(legend_title_text="Recorte avaliado")
         st.plotly_chart(fig, use_container_width=True)
 
 
@@ -226,6 +335,10 @@ with ewm_tab:
     if evidence.empty:
         st.info("Execute `evidence_why_ewm3_strong_h3.ipynb` para gerar estas evidências.")
     else:
+        scope_options = ["Todos"] + sorted(evidence["escopo"].dropna().unique())
+        selected_evidence_scope = st.selectbox("Estratégia comparada", scope_options, key="ewm_scope")
+        if selected_evidence_scope != "Todos":
+            evidence = evidence[evidence["escopo"] == selected_evidence_scope]
         fig = px.bar(
             evidence.sort_values("ganho_medio_vs_EWM3_pct"),
             x="ganho_medio_vs_EWM3_pct",
@@ -269,38 +382,79 @@ with ewm_tab:
 
 
 with explain_tab:
-    st.subheader("Explicabilidade e diagnósticos do Ridge")
-    diagnostics = get_data("diagnosticos")
-    diagnostics = diagnostics[diagnostics["target"] == target] if not diagnostics.empty else diagnostics
-    if diagnostics.empty:
-        st.info("Ainda não há diagnósticos do Ridge. Execute `diagnostics_explainability_ridge_h3.ipynb`.")
+    st.subheader("Explicabilidade do modelo final")
+    reserved_rows = comparison_all
+    if "avaliacao" in reserved_rows:
+        reserved_rows = reserved_rows[reserved_rows.avaliacao.eq("teste_reservado")]
+    reserved_rows = reserved_rows[reserved_rows.target == target] if not reserved_rows.empty else reserved_rows
+    baselines_for_explain = {"EWM3", "media_historica_fixa", "EWM3_alto_HurdleNB_baixo"}
+    final_models = reserved_rows[~reserved_rows.modelo.isin(baselines_for_explain)] if not reserved_rows.empty else reserved_rows
+    if final_models.empty:
+        st.warning("O teste reservado ainda não escolheu o modelo final. Execute o teste reservado primeiro.")
     else:
-        dcols = st.columns(4)
-        dcols[0].metric("Folds analisados", str(diagnostics["fold"].nunique()))
-        dcols[1].metric("p-valor mediano (Jarque–Bera)", fmt(diagnostics["jarque_bera_p"].median(), 4))
-        dcols[2].metric("p-valor mediano (Breusch–Pagan)", fmt(diagnostics["breusch_pagan_p"].median(), 4))
-        dcols[3].metric("Erro médio de validação", fmt(diagnostics["media_erro_validacao"].mean()))
-        st.caption("p-valores pequenos sinalizam evidência contra normalidade dos resíduos ou variância constante. Isso orienta a interpretação; não invalida automaticamente a previsão.")
-        st.dataframe(diagnostics, hide_index=True, use_container_width=True)
+        selected_model = str(final_models.iloc[0].modelo)
+        st.markdown(f"**Alvo:** {target_labels.get(target, target)}  \n**Modelo treinado:** {model_label(selected_model)}")
+        importance_all = get_data("importancia")
+        if not importance_all.empty:
+            importance = importance_all[
+                importance_all.target.eq(target)
+                & importance_all.modelo.eq(selected_model)
+                & importance_all.get("avaliacao", pd.Series(index=importance_all.index, dtype=str)).eq("treino_final")
+            ].copy()
+        else:
+            importance = pd.DataFrame()
+        if importance.empty:
+            st.info("As importâncias do ajuste final ainda não estão salvas. Execute `python processing_datasets/final_model_comparison_groups_h3.py --reserved-test-only`.")
+        else:
+            importance = importance.groupby(["feature", "metodo_importancia"], as_index=False).agg(
+                importancia=("importancia", "mean"), coeficiente_padronizado=("coeficiente_padronizado", "mean")
+            ).sort_values("importancia", ascending=False)
+            fig = px.bar(
+                importance.head(20).sort_values("importancia"), x="importancia", y="feature",
+                color="metodo_importancia", orientation="h",
+                labels={"importancia": "Importância no modelo ajustado", "feature": "Feature", "metodo_importancia": "Método"},
+            )
+            fig.update_layout(showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+            st.caption("Importância calculada no modelo ajustado somente com o treino. Ela descreve contribuição preditiva, não causalidade.")
 
-    vif = get_data("vif")
-    vif = vif[vif["target"] == target] if not vif.empty else vif
-    if not vif.empty:
-        st.markdown("**Multicolinearidade (VIF)**")
-        vif_mean = vif.groupby("feature", as_index=False)["VIF"].median().sort_values("VIF", ascending=False).head(20)
-        fig = px.bar(vif_mean.sort_values("VIF"), x="VIF", y="feature", orientation="h", labels={"VIF": "VIF mediano entre folds", "feature": "Feature"})
-        fig.add_vline(x=5, line_dash="dash", annotation_text="5")
-        fig.add_vline(x=10, line_dash="dot", annotation_text="10")
-        st.plotly_chart(fig, use_container_width=True)
+        if selected_model.startswith("RF"):
+            st.info("Random Forest não tem coeficientes lineares nem pressupostos clássicos de OLS. A importância por redução de impureza ajuda a priorizar variáveis preditivas, mas não mede efeito causal.")
+        elif selected_model.startswith("GAM"):
+            st.info("GAM é uma regressão aditiva com efeitos suaves. As features importantes incluem magnitudes das bases spline; elas não são coeficientes lineares únicos por feature.")
+            diagnostics = get_data("diagnosticos")
+            if not diagnostics.empty:
+                diagnostics = diagnostics[(diagnostics.target == target) & (diagnostics.modelo == selected_model)]
+            if not diagnostics.empty:
+                row = diagnostics.iloc[-1]
+                c1, c2, c3 = st.columns(3)
+                c1.metric("p-valor Jarque–Bera", "< 0,0001" if row.jarque_bera_p < .0001 else fmt(row.jarque_bera_p, 4))
+                c2.metric("p-valor Breusch–Pagan", "< 0,0001" if row.breusch_pagan_p < .0001 else fmt(row.breusch_pagan_p, 4))
+                c3.metric("Média do erro no teste", fmt(row.media_erro_validacao))
+                st.caption("Os testes avaliam resíduos do ajuste GAM no treino: normalidade (Jarque–Bera) e variância constante (Breusch–Pagan). Valores pequenos são evidência contra essas suposições. Isso limita inferência clássica sobre os coeficientes spline; não elimina o uso preditivo.")
 
-    importance = get_data("importancia")
-    importance = importance[importance["target"] == target] if not importance.empty else importance
-    if not importance.empty:
-        st.markdown("**Features associadas à redução do erro (permutação)**")
-        imp = importance.groupby("feature", as_index=False)["delta_RMSE_permutacao"].mean().sort_values("delta_RMSE_permutacao").tail(20)
-        fig = px.bar(imp, x="delta_RMSE_permutacao", y="feature", orientation="h", labels={"delta_RMSE_permutacao": "Aumento médio do RMSE ao embaralhar", "feature": "Feature"})
-        st.plotly_chart(fig, use_container_width=True)
-        st.caption("Valores maiores indicam que embaralhar a feature piorou mais a previsão. Isso mede contribuição preditiva, não causalidade.")
+        autocorr = get_data("autocorrelacao")
+        if not autocorr.empty:
+            autocorr = autocorr[(autocorr.target == target) & (autocorr.modelo == selected_model)]
+            if "particao" in autocorr:
+                autocorr = autocorr[autocorr.particao.eq("teste_reservado")]
+        if not autocorr.empty:
+            st.markdown("**Autocorrelação dos erros no teste reservado**")
+            st.metric("Erro mensal lag-1 dentro da célula H3", fmt(autocorr.iloc[-1].autocorrelacao_erro_lag1, 3))
+            st.caption("Valor perto de zero indica menos padrão temporal restante nos erros; este resultado é medido no conjunto reservado.")
+
+        residual_shape = get_data("forma_residuo")
+        if not residual_shape.empty:
+            residual_shape = residual_shape[(residual_shape.target == target) & (residual_shape.modelo == selected_model)]
+            if "particao" in residual_shape:
+                residual_shape = residual_shape[residual_shape.particao.eq("teste_reservado")]
+        if not residual_shape.empty and "DATA" in residual_shape:
+            residual_shape["DATA"] = pd.to_datetime(residual_shape["DATA"])
+            fig = px.line(residual_shape.sort_values("DATA"), x="DATA", y="residuo_medio", markers=True,
+                          labels={"DATA": "Mês reservado", "residuo_medio": "Erro médio (observado − previsto)"})
+            fig.add_hline(y=0, line_dash="dash", line_color="gray")
+            st.plotly_chart(fig, use_container_width=True)
+            st.caption("Erro mensal positivo indica subprevisão em média; negativo indica sobreprevisão.")
 
 
 with validation_tab:

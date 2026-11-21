@@ -62,6 +62,22 @@ def make_history(frame, count_col, k):
 def main():
     if not SRC.exists():
         raise FileNotFoundError(f"Não encontrei a base: {SRC}")
+    # The comparison notebook now writes Ridge diagnostics for direct and
+    # EWM3-residual variants in global/grouped scopes. Preserve and display that
+    # comprehensive result instead of overwriting it with the legacy high-only run.
+    current_diagnostics = OUT / "diagnostics_ridge_h3_diagnostics.csv"
+    if current_diagnostics.exists():
+        current = pd.read_csv(current_diagnostics)
+        if {"modelo", "escopo"}.issubset(current.columns):
+            print("Diagnósticos multi-modelo atualizados pela comparação temporal:")
+            print(current.groupby(["target", "modelo", "escopo"], as_index=False).agg(
+                folds=("fold", "nunique"),
+                jarque_bera_p_mediano=("jarque_bera_p", "median"),
+                breusch_pagan_p_mediano=("breusch_pagan_p", "median"),
+                erro_validacao_medio=("media_erro_validacao", "mean"),
+            ).to_string(index=False))
+            print(f"\nCSVs existentes preservados em: {OUT}")
+            return
     data = pd.read_csv(SRC, parse_dates=["DATA"], low_memory=False)
     data = data.sort_values(["H3", "DATA"]).reset_index(drop=True)
     data = data[data.DATA.between("2022-01-01", "2026-06-01")].copy()

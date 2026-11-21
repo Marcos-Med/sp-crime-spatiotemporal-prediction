@@ -17,38 +17,38 @@ def rmse(y, p):
 def main():
     # Results from the final count-model comparison, already evaluated OOF.
     summary = pd.read_csv(D / "final_model_comparison_groups_h3_summary.csv")
+    if "avaliacao" in summary:
+        summary = summary[summary.avaliacao.eq("validacao_temporal")].copy()
     folds = pd.read_csv(D / "final_model_comparison_groups_h3_folds.csv")
     grouping = pd.read_csv(D / "final_model_comparison_groups_h3_grouping_effect.csv")
     pred = pd.read_csv(D / "final_model_comparison_groups_h3_predictions.csv", parse_dates=["DATA"])
+    if "particao" in pred:
+        pred = pred[pred.particao.eq("validacao_temporal")].copy()
     assignments = pd.read_csv(D / "final_model_comparison_groups_h3_assignments.csv")
 
-    # Best non-baseline configuration per target, global and grouped.
-    algo_names = ["RF", "Ridge_log1p", "GAM", "EBM"]
+    # Keep every tested direct and residual configuration visible against EWM3.
     best_rows = []
     for target in summary.target.unique():
         g = summary[summary.target.eq(target)].set_index("modelo")
-        for scope, names in [
-            ("global", [f"{m}_global" for m in algo_names]),
-            ("grupos_mesmo_modelo", [f"{m}_grupos_mesmo_modelo" for m in algo_names]),
-            ("alto_modelo_baixo_hurdle", [f"{m}_alto_HurdleNB_baixo" for m in algo_names]),
-        ]:
-            candidate = g.loc[g.index.intersection(names)].sort_values("RMSE_risco_medio").head(1)
-            if not candidate.empty:
-                name = candidate.index[0]
-                row = candidate.iloc[0]
-                best_rows.append({"target": target, "escopo": scope, "modelo": name,
-                                  "RMSE_medio": row.RMSE_risco_medio,
-                                  "ganho_medio_vs_EWM3_pct": row.ganho_medio_vs_EWM3_pct,
-                                  "folds_melhor_EWM3": int(row.folds_melhor_EWM3),
-                                  "ganho_medio_vs_media_fixa_pct": row.ganho_medio_vs_media_fixa_pct})
-        for base_name in ["media_historica_fixa", "EWM3"]:
-            row = g.loc[base_name]
-            best_rows.append({"target": target, "escopo": "baseline", "modelo": base_name,
+        for name, row in g.iterrows():
+            if name in {"EWM3", "media_historica_fixa"}:
+                scope = "baseline"
+            elif "_resid_" in name:
+                scope = "residuo_" + name.split("_resid_", 1)[1]
+            elif name.endswith("_global"):
+                scope = "global"
+            elif name.endswith("_grupos_mesmo_modelo"):
+                scope = "grupos_mesmo_modelo"
+            elif name.endswith("_alto_HurdleNB_baixo"):
+                scope = "alto_modelo_baixo_hurdle"
+            else:
+                scope = "outro"
+            best_rows.append({"target": target, "escopo": scope, "modelo": name,
                               "RMSE_medio": row.RMSE_risco_medio,
                               "ganho_medio_vs_EWM3_pct": row.ganho_medio_vs_EWM3_pct,
                               "folds_melhor_EWM3": int(row.folds_melhor_EWM3),
                               "ganho_medio_vs_media_fixa_pct": row.ganho_medio_vs_media_fixa_pct})
-        # Include previously tested residual Ridge as a separate target strategy.
+        # Retain the earlier, separately configured residual validation for context.
         old = pd.read_csv(D / "validation_target_specific_residual_h3_summary.csv")
         old = old[(old.target == target) & (old.share_high == .20) &
                   (old.segmento == "todos") & (old.modelo == "ridgeresid_hurdle_top20")]

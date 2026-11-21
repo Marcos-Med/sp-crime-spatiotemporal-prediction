@@ -56,11 +56,11 @@ A base de dados unificada final, assim como os dados brutos utilizados pelo note
 
 ## 📊 Dashboard dos Resultados
 
-Depois de executar os notebooks de validação, instale as dependências do painel e inicie o Streamlit na raiz do repositório:
+Depois de executar a comparação final (que também ajusta os modelos selecionados e testa o período reservado), instale as dependências do painel e inicie o Streamlit na raiz do repositório:
 
 ```bash
 pip install -r requirements-dashboard.txt
 streamlit run processing_datasets/dashboard_resultados_ssp_sp.py
 ```
 
-O painel lê os CSVs já gerados em `datasets/`; ele não executa notebooks nem treina modelos.
+O painel lê os CSVs já gerados em `datasets/`; ele não executa notebooks nem treina modelos. A aba **Teste reservado** mostra jul/2025–jun/2026. A aba **Explicabilidade** mostra somente o modelo final escolhido para o alvo selecionado.
