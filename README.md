@@ -31,8 +31,8 @@ A base de dados unificada final, assim como os dados brutos utilizados pelo note
 ### Como utilizar os dados localmente:
 1. Acesse o link do Google Drive acima.
 2. Faça o download do arquivo da base unificada (ou dos dados brutos).
-3. Crie uma pasta chamada `datasets/` na raiz deste repositório.
-4. Mova os arquivos baixados para a pasta `datasets/` (esta pasta já está configurada no `.gitignore` e não será enviada ao GitHub).
+3. Crie a pasta `datasets/` na raiz do repositório.
+4. Coloque os arquivos criminais da SSP-SP em `datasets/SSP-SP/` e mantenha as fontes socioeconômicas em `datasets/CENSO_IBGE_2022/` e `datasets/IPVS_2022/`. A pasta `datasets/` está no `.gitignore` e não será enviada ao GitHub.
 
 ---
 
@@ -51,5 +51,16 @@ A base de dados unificada final, assim como os dados brutos utilizados pelo note
 
 3. **Abra e execute o Jupyter Notebook:**
    ```bash
-   jupyter notebook processing_datasets_ssp_sp.ipynb
+   jupyter notebook processing_datasets/processing_datasets_ssp_sp.ipynb
    ```
+
+## 📊 Dashboard dos Resultados
+
+Depois de executar os notebooks de validação, instale as dependências do painel e inicie o Streamlit na raiz do repositório:
+
+```bash
+pip install -r requirements-dashboard.txt
+streamlit run processing_datasets/dashboard_resultados_ssp_sp.py
+```
+
+O painel lê os CSVs já gerados em `datasets/`; ele não executa notebooks nem treina modelos.
