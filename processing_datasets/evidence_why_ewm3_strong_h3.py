@@ -48,43 +48,30 @@ def main():
                               "ganho_medio_vs_EWM3_pct": row.ganho_medio_vs_EWM3_pct,
                               "folds_melhor_EWM3": int(row.folds_melhor_EWM3),
                               "ganho_medio_vs_media_fixa_pct": row.ganho_medio_vs_media_fixa_pct})
-        # Retain the earlier, separately configured residual validation for context.
-        old = pd.read_csv(D / "validation_target_specific_residual_h3_summary.csv")
-        old = old[(old.target == target) & (old.share_high == .20) &
-                  (old.segmento == "todos") & (old.modelo == "ridgeresid_hurdle_top20")]
-        if not old.empty:
-            row = old.iloc[0]
-            best_rows.append({"target": target, "escopo": "residuo_versus_EWM3", "modelo": "Ridge_residual_alto_HurdleNB_baixo",
-                              "RMSE_medio": row.RMSE_mean,
-                              "ganho_medio_vs_EWM3_pct": row.gain_vs_ewm3_pct,
-                              "folds_melhor_EWM3": int(row.folds_better_than_ewm3),
-                              "ganho_medio_vs_media_fixa_pct": row.gain_vs_mean_pct})
     best_df = pd.DataFrame(best_rows)
     best_df.to_csv(D / "evidence_why_ewm3_h3_model_comparison.csv", index=False)
 
     # Per-fold comparison of EWMA3, fixed per-cell historical mean, and leading candidates.
-    chosen = {
-        "RISCO_CRIME": ["EWM3", "media_historica_fixa", "Ridge_log1p_alto_HurdleNB_baixo", "Ridge_residual_alto_HurdleNB_baixo"],
-        "RISCO_FURTO": ["EWM3", "media_historica_fixa", "Ridge_log1p_alto_HurdleNB_baixo", "Ridge_residual_alto_HurdleNB_baixo"],
-        "RISCO_ROUBO": ["EWM3", "media_historica_fixa", "Ridge_log1p_grupos_mesmo_modelo", "GAM_alto_HurdleNB_baixo", "Ridge_residual_alto_HurdleNB_baixo"],
-    }
+    chosen = {}
+    best_by_target = {}
+    for target in summary.target.unique():
+        target_summary = summary[summary.target.eq(target)]
+        best_by_target[target] = str(target_summary.sort_values("RMSE_risco_medio").iloc[0].modelo)
+        residuals = target_summary[target_summary.modelo.str.contains("_resid_", regex=False)]
+        if not residuals.empty:
+            best_by_target[f"{target}_resid"] = str(residuals.sort_values("RMSE_risco_medio").iloc[0].modelo)
+        chosen[target] = list(dict.fromkeys([
+            "EWM3", "media_historica_fixa", best_by_target[target],
+            *([best_by_target[f"{target}_resid"]] if f"{target}_resid" in best_by_target else []),
+        ]))
     fold_rows = []
-    old_folds = pd.read_csv(D / "validation_target_specific_residual_h3_fold_metrics.csv")
     for target, names in chosen.items():
         for name in names:
-            if name == "Ridge_residual_alto_HurdleNB_baixo":
-                sub = old_folds[(old_folds.target == target) & (old_folds.share_high == .20) &
-                                (old_folds.segmento == "todos") & (old_folds.modelo == "ridgeresid_hurdle_top20")]
-                for _, r in sub.iterrows():
-                    fold_rows.append({"fold": r.fold, "target": target, "modelo": name,
-                                      "RMSE_risco": r.RMSE, "MAE_risco": r.MAE,
-                                      "fonte": "validacao_residual_anterior"})
-            else:
-                sub = folds[(folds.target == target) & (folds.segmento == "todos") & (folds.modelo == name)]
-                for _, r in sub.iterrows():
-                    fold_rows.append({"fold": r.fold, "target": target, "modelo": name,
-                                      "RMSE_risco": r.RMSE_risco, "MAE_risco": r.MAE_risco,
-                                      "fonte": "comparacao_final_contagens"})
+            sub = folds[(folds.target == target) & (folds.segmento == "todos") & (folds.modelo == name)]
+            for _, r in sub.iterrows():
+                fold_rows.append({"fold": r.fold, "target": target, "modelo": name,
+                                  "RMSE_risco": r.RMSE_risco, "MAE_risco": r.MAE_risco,
+                                  "fonte": "comparacao_final"})
     fold_df = pd.DataFrame(fold_rows)
     fold_df.to_csv(D / "evidence_why_ewm3_h3_fold_metrics.csv", index=False)
 
@@ -126,20 +113,28 @@ def main():
     persistence = pd.DataFrame(persistence_rows)
     persistence.to_csv(D / "evidence_why_ewm3_h3_temporal_persistence.csv", index=False)
 
-    # Does a model predict the EWMA3 error (innovation) out of sample?
-    resid_pred = pd.read_csv(D / "validation_target_specific_residual_h3_predictions.csv")
-    resid_pred = resid_pred[resid_pred.share_high.eq(.20)].copy()
-    resid_pred["erro_EWM3"] = resid_pred.y_true - resid_pred.pred_ewm3_global
-    resid_pred["ajuste_Ridge"] = resid_pred.pred_ridge_resid_hurdle - resid_pred.pred_ewm3_global
+    # Does the best residual model from the main comparison learn the EWM3 error?
     residual_rows = []
-    for (fold, target), g in resid_pred.groupby(["fold", "target"]):
-        residual_rows.append({"fold": fold, "target": target, "n": len(g),
-                              "RMSE_EWM3": rmse(g.y_true, g.pred_ewm3_global),
-                              "RMSE_Ridge_residual": rmse(g.y_true, g.pred_ridge_resid_hurdle),
-                              "corr_erro_real_ajuste_Ridge": g.erro_EWM3.corr(g.ajuste_Ridge),
-                              "MAE_erro_EWM3": float(np.mean(np.abs(g.erro_EWM3))),
-                              "MAE_ajuste_Ridge": float(np.mean(np.abs(g.ajuste_Ridge))),
-                              "frac_previsoes_Ridge_corrigidas": float(np.mean(np.abs(g.ajuste_Ridge) > 1e-12))})
+    for target in summary.target.unique():
+        model_name = best_by_target.get(f"{target}_resid")
+        if model_name is None:
+            continue
+        resid_pred = pred[pred.target.eq(target)].copy()
+        pred_col = f"pred_{model_name}"
+        if pred_col not in resid_pred:
+            continue
+        for fold, g in resid_pred.groupby("fold"):
+            real_error = g.y_risco - g.pred_EWM3
+            correction = g[pred_col] - g.pred_EWM3
+            corrected_prediction = g.pred_EWM3 + correction
+            rmse_ewm = rmse(g.y_risco, g.pred_EWM3)
+            rmse_corrected = rmse(g.y_risco, corrected_prediction)
+            residual_rows.append({"fold": fold, "target": target, "modelo": model_name, "n": len(g),
+                              "RMSE_EWM3": rmse_ewm, "RMSE_modelo_residual": rmse_corrected,
+                              "corr_erro_real_correcao": real_error.corr(correction),
+                              "MAE_erro_EWM3": float(np.mean(np.abs(real_error))),
+                              "MAE_correcao": float(np.mean(np.abs(correction))),
+                              "frac_previsoes_corrigidas": float(np.mean(np.abs(correction) > 1e-12))})
     residual = pd.DataFrame(residual_rows)
     residual.to_csv(D / "evidence_why_ewm3_h3_residual_learnability.csv", index=False)
 
@@ -153,13 +148,6 @@ def main():
                                    "n_H3_total": len(g), "n_H3_alto": int(g.grupo.eq("alto").sum())})
     concentration = pd.DataFrame(concentration_rows)
     concentration.to_csv(D / "evidence_why_ewm3_h3_group_concentration.csv", index=False)
-
-    # Residual permutation importance: do features explain what EWMA3 misses?
-    importance = pd.read_csv(D / "diagnostics_ridge_h3_importance.csv")
-    importance_summary = importance.groupby(["target", "feature"], as_index=False).agg(
-        delta_RMSE_permutacao=("delta_RMSE_permutacao", "mean"),
-        folds_com_delta_positivo=("delta_RMSE_permutacao", lambda s: int((s > 0).sum())))
-    importance_summary.to_csv(D / "evidence_why_ewm3_h3_residual_feature_importance.csv", index=False)
 
     print("1) Baselines e melhores algoritmos por escopo:")
     print(best_df.sort_values(["target", "escopo", "RMSE_medio"]).to_string(index=False))

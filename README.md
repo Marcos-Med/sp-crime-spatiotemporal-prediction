@@ -64,3 +64,12 @@ streamlit run processing_datasets/dashboard_resultados_ssp_sp.py
 ```
 
 O painel lê os CSVs já gerados em `datasets/`; ele não executa notebooks nem treina modelos. A aba **Teste reservado** mostra jul/2025–jun/2026. A aba **Explicabilidade** mostra somente o modelo final escolhido para o alvo selecionado.
+
+### Fluxo de avaliação e interpretação
+
+1. Execute `processing_datasets/final_model_comparison_groups_h3.ipynb`. Ele compara a média histórica fixa e EWM3 com RF, Ridge, Ridge (`log1p`), GAM e EBM por alvo, incluindo previsões diretas, correções residuais e estratégias com grupos.
+2. O pipeline escolhe o menor RMSE médio na validação temporal para cada alvo, reajusta apenas esses três vencedores no treino (jan/2023–jun/2025) e calcula o resultado no teste reservado (jul/2025–jun/2026). Os CSVs também incluem R² na escala de risco.
+3. Execute `processing_datasets/evidence_why_ewm3_strong_h3.ipynb` para atualizar as evidências complementares do EWM3 a partir dos resultados da comparação principal.
+4. Abra o dashboard. Em **Explicabilidade**, selecione o alvo para ver a importância e os diagnósticos do modelo final daquele alvo.
+
+Os notebooks separados de validação de contagens, validação residual específica e diagnóstico isolado do Ridge foram retirados do fluxo. A comparação principal produz os resultados de seleção e explicabilidade dos modelos finais.

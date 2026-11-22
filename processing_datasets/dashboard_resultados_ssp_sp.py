@@ -17,13 +17,11 @@ FILES = {
     "ewm_comparacao": "evidence_why_ewm3_h3_model_comparison.csv",
     "persistencia": "evidence_why_ewm3_h3_temporal_persistence.csv",
     "residuo": "evidence_why_ewm3_h3_residual_learnability.csv",
-    "validacao_residuos": "validation_target_specific_residual_h3_summary.csv",
     "diagnosticos": "diagnostics_ridge_h3_diagnostics.csv",
     "vif": "diagnostics_ridge_h3_vif.csv",
     "importancia": "final_model_comparison_groups_h3_ebm_importance.csv",
     "autocorrelacao": "diagnostics_ridge_h3_temporal_error_autocorrelation.csv",
     "forma_residuo": "diagnostics_ridge_h3_residual_shape_by_fitted_decile.csv",
-    "contagem": "validation_explainable_count_models_h3_comparison.csv",
 }
 
 
@@ -110,6 +108,8 @@ if comparison_all.empty:
         "`final_model_comparison_groups_h3.ipynb` e confira se os CSVs estão em `datasets/`."
     )
     st.stop()
+if "R2_risco_medio" not in comparison_all:
+    comparison_all["R2_risco_medio"] = float("nan")
 comparison = comparison_all
 if "avaliacao" in comparison:
     comparison = comparison[comparison.avaliacao.eq("validacao_temporal")].copy()
@@ -131,8 +131,8 @@ with st.sidebar:
     st.divider()
     st.caption("Os gráficos usam os CSVs gerados pelos notebooks. Reexecute o app depois de atualizar esses arquivos.")
 
-overview, test_tab, groups_tab, ewm_tab, explain_tab, validation_tab, files_tab = st.tabs(
-    ["Visão geral", "Teste reservado", "Grupos", "EWM3", "Explicabilidade", "Validações", "Arquivos"]
+overview, test_tab, groups_tab, ewm_tab, explain_tab, files_tab = st.tabs(
+    ["Visão geral", "Teste reservado", "Grupos", "EWM3", "Explicabilidade", "Arquivos"]
 )
 
 
@@ -183,6 +183,7 @@ with overview:
                 "folds",
                 "RMSE_risco_medio",
                 "MAE_risco_medio",
+                "R2_risco_medio",
                 "ganho_medio_vs_EWM3_pct",
                 "ganho_medio_vs_media_fixa_pct",
                 "folds_melhor_EWM3",
@@ -193,6 +194,7 @@ with overview:
                 "folds": "Folds",
                 "RMSE_risco_medio": "RMSE médio",
                 "MAE_risco_medio": "MAE médio",
+                "R2_risco_medio": "R² médio (risco)",
                 "ganho_medio_vs_EWM3_pct": "Ganho vs EWM3 (%)",
                 "ganho_medio_vs_media_fixa_pct": "Ganho vs média fixa (%)",
                 "folds_melhor_EWM3": "Folds em que venceu EWM3",
@@ -202,6 +204,7 @@ with overview:
         use_container_width=True,
     )
     st.caption("RMSE e MAE são calculados no score de risco. Ganho positivo indica erro menor que a referência.")
+    st.caption("R² também usa o risco: 1 é ajuste perfeito, 0 equivale a prever a média observada e valores negativos indicam desempenho pior que essa referência.")
 
 
 with test_tab:
@@ -226,12 +229,13 @@ with test_tab:
             c4.metric("Meses reservados", str(final_row.meses_teste))
 
             st.dataframe(reserved_results[[
-                "modelo", "RMSE_risco_medio", "MAE_risco_medio",
+                "modelo", "RMSE_risco_medio", "MAE_risco_medio", "R2_risco_medio",
                 "ganho_medio_vs_EWM3_pct", "ganho_medio_vs_media_fixa_pct",
                 "n_teste", "H3_teste", "meses_teste",
             ]].rename(columns={
                 "modelo": "Modelo", "RMSE_risco_medio": "RMSE no teste",
-                "MAE_risco_medio": "MAE no teste", "ganho_medio_vs_EWM3_pct": "Ganho vs EWM3 (%)",
+                "MAE_risco_medio": "MAE no teste", "R2_risco_medio": "R² no teste",
+                "ganho_medio_vs_EWM3_pct": "Ganho vs EWM3 (%)",
                 "ganho_medio_vs_media_fixa_pct": "Ganho vs média fixa (%)",
                 "n_teste": "Registros", "H3_teste": "Células H3", "meses_teste": "Meses",
             }), hide_index=True, use_container_width=True)
@@ -367,18 +371,27 @@ with ewm_tab:
 
     learnability = get_data("residuo")
     learnability = learnability[learnability["target"] == target] if not learnability.empty else learnability
+    if "RMSE_modelo_residual" not in learnability and "RMSE_Ridge_residual" in learnability:
+        learnability = learnability.rename(columns={"RMSE_Ridge_residual": "RMSE_modelo_residual"})
     if not learnability.empty:
         st.markdown("**O erro do EWM3 é previsível pelos modelos?**")
+        chart_data = learnability.melt(
+            id_vars="fold",
+            value_vars=["RMSE_EWM3", "RMSE_modelo_residual"],
+            var_name="Previsão",
+            value_name="RMSE",
+        )
         fig = px.bar(
-            learnability,
+            chart_data,
             x="fold",
-            y=["RMSE_EWM3", "RMSE_Ridge_residual"],
+            y="RMSE",
+            color="Previsão",
             barmode="group",
-            labels={"fold": "Fold", "value": "RMSE", "variable": "Previsão"},
+            labels={"fold": "Fold", "RMSE": "RMSE", "Previsão": "Previsão"},
             color_discrete_sequence=["#d97706", "#2563eb"],
         )
         st.plotly_chart(fig, use_container_width=True)
-        st.caption("Ajustar o resíduo só ajuda se a correção reduzir o erro fora da amostra; compare os dois RMSEs em cada fold.")
+        st.caption("O modelo residual exibido é o de menor RMSE na validação temporal para este alvo. A correção só ajuda se reduzir o RMSE do EWM3 nos folds.")
 
 
 with explain_tab:
@@ -455,32 +468,6 @@ with explain_tab:
             fig.add_hline(y=0, line_dash="dash", line_color="gray")
             st.plotly_chart(fig, use_container_width=True)
             st.caption("Erro mensal positivo indica subprevisão em média; negativo indica sobreprevisão.")
-
-
-with validation_tab:
-    st.subheader("Outras validações")
-    residual_validation = get_data("validacao_residuos")
-    if not residual_validation.empty:
-        residual_validation = residual_validation[residual_validation["target"] == target]
-        shares = sorted(residual_validation["share_high"].dropna().unique())
-        if shares:
-            share = st.selectbox("Proporção classificada como alta atividade", shares, format_func=lambda x: pct(x * 100, 0), key="share_high")
-            sub = residual_validation[residual_validation["share_high"] == share].copy()
-            segment = st.selectbox("Segmento", sorted(sub["segmento"].dropna().unique()), key="resid_segment")
-            sub = sub[sub["segmento"] == segment].sort_values("RMSE_mean")
-            st.dataframe(sub.rename(columns={
-                "modelo": "Modelo", "folds": "Folds", "RMSE_mean": "RMSE médio", "MAE_mean": "MAE médio", "R2_mean": "R² médio", "gain_vs_ewm3_pct": "Ganho vs EWM3 (%)", "gain_vs_mean_pct": "Ganho vs média fixa (%)", "folds_better_than_ewm3": "Folds em que venceu EWM3",
-            }), hide_index=True, use_container_width=True)
-    else:
-        st.info("CSV da validação de resíduos ainda não encontrado.")
-
-    counts = get_data("contagem")
-    counts = counts[counts["target"] == target] if not counts.empty else counts
-    if not counts.empty:
-        st.markdown("**Modelos explicáveis para contagem**")
-        st.dataframe(counts.sort_values("RMSE_risco_medio").rename(columns={
-            "modelo": "Modelo", "RMSE_risco_medio": "RMSE médio", "ganho_vs_ewm3_pct": "Ganho vs EWM3 (%)", "folds_melhor_ewm3": "Folds em que venceu EWM3", "ganho_vs_media_fixa_pct": "Ganho vs média fixa (%)", "n_folds": "Folds",
-        }), hide_index=True, use_container_width=True)
 
 
 with files_tab:

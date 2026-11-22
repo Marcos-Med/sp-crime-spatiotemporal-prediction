@@ -15,7 +15,7 @@ from scipy.stats import jarque_bera, skew, kurtosis
 from statsmodels.gam.api import BSplines, GLMGam
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LogisticRegression, Ridge
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from interpret.glassbox import ExplainableBoostingRegressor
@@ -415,6 +415,7 @@ def evaluate_reserved_test():
             selected_rows.append({
                 "target": target, "modelo": model_name, "folds": 1,
                 "RMSE_risco_medio": rmse_value, "MAE_risco_medio": mae_value,
+                "R2_risco_medio": float(r2_score(truth, pred)),
                 "ganho_medio_vs_EWM3_pct": (ewm_rmse - rmse_value) / ewm_rmse * 100,
                 "ganho_medio_vs_media_fixa_pct": (fixed_rmse - rmse_value) / fixed_rmse * 100,
                 "folds_melhor_EWM3": int(rmse_value < ewm_rmse),
@@ -692,6 +693,7 @@ def main():
                                         "share_alto": HIGH_SHARE, "K_fold": k, "n": int(mask.sum()),
                                         "RMSE_risco": rmse(truth[mask], prediction[mask]),
                                         "MAE_risco": float(mean_absolute_error(truth[mask], prediction[mask])),
+                                        "R2_risco": float(r2_score(truth[mask], prediction[mask])) if mask.sum() > 1 else np.nan,
                                         "RMSE_contagem": rmse(valid.loc[mask, count_col].to_numpy(), pred_counts[name][mask]) if name in pred_counts else np.nan})
             pred_rows.append(pd.DataFrame({"fold": fold, "target": target, "H3": valid.H3.to_numpy(),
                                            "DATA": valid.DATA.to_numpy(), "grupo": valid.grupo.to_numpy(),
@@ -717,6 +719,7 @@ def main():
     all_metrics["ganho_vs_media_fixa_pct"] = (all_metrics.RMSE_media_fixa - all_metrics.RMSE_risco) / all_metrics.RMSE_media_fixa * 100
     summary = all_metrics.groupby(["target", "modelo"], as_index=False).agg(
         folds=("fold", "nunique"), RMSE_risco_medio=("RMSE_risco", "mean"), MAE_risco_medio=("MAE_risco", "mean"),
+        R2_risco_medio=("R2_risco", "mean"),
         ganho_medio_vs_EWM3_pct=("ganho_vs_EWM3_pct", "mean"), ganho_medio_vs_media_fixa_pct=("ganho_vs_media_fixa_pct", "mean"),
         folds_melhor_EWM3=("ganho_vs_EWM3_pct", lambda s: int((s > 0).sum())),
         folds_melhor_media_fixa=("ganho_vs_media_fixa_pct", lambda s: int((s > 0).sum())))
@@ -739,7 +742,8 @@ def main():
                                           "ganho_hibrido_vs_global_pct": (global_rmse - hybrid_rmse) / global_rmse * 100})
     pd.DataFrame(group_effect_rows).to_csv(OUT / "final_model_comparison_groups_h3_grouping_effect.csv", index=False)
     segment_summary = metrics.groupby(["target", "modelo", "segmento"], as_index=False).agg(
-        RMSE_risco_medio=("RMSE_risco", "mean"), MAE_risco_medio=("MAE_risco", "mean"), RMSE_contagem_media=("RMSE_contagem", "mean"))
+        RMSE_risco_medio=("RMSE_risco", "mean"), MAE_risco_medio=("MAE_risco", "mean"),
+        R2_risco_medio=("R2_risco", "mean"), RMSE_contagem_media=("RMSE_contagem", "mean"))
     segment_summary.to_csv(OUT / "final_model_comparison_groups_h3_segment_summary.csv", index=False)
     print("Comparação geral, média dos 3 folds:")
     print(summary.sort_values(["target", "RMSE_risco_medio"]).to_string(index=False))
