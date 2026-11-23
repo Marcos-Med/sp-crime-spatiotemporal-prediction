@@ -25,6 +25,12 @@ def main():
     if "particao" in pred:
         pred = pred[pred.particao.eq("validacao_temporal")].copy()
     assignments = pd.read_csv(D / "final_model_comparison_groups_h3_assignments.csv")
+    importance_path = D / "evidence_why_ewm3_h3_residual_feature_importance.csv"
+    importance_summary = (
+        pd.read_csv(importance_path)
+        if importance_path.exists()
+        else pd.DataFrame(columns=["target", "feature", "delta_RMSE_permutacao", "folds_com_delta_positivo"])
+    )
 
     # Keep every tested direct and residual configuration visible against EWM3.
     best_rows = []
@@ -161,7 +167,16 @@ def main():
     print("\n4) Concentração no top 20% de H3:")
     print(concentration.groupby("target").frac_contagens_no_grupo_alto.agg(["mean", "min", "max"]).to_string())
     print("\n5) Features que mais explicam o erro residual da EWMA3:")
-    print(importance_summary.sort_values(["target", "delta_RMSE_permutacao"], ascending=[True, False]).groupby("target").head(6).to_string(index=False))
+    if importance_summary.empty:
+        print(
+            "Importâncias ainda não disponíveis. O arquivo "
+            f"{importance_path.name} não foi encontrado; execute a etapa de importância "
+            "por permutação antes desta análise."
+        )
+    else:
+        print(importance_summary.sort_values(
+            ["target", "delta_RMSE_permutacao"], ascending=[True, False]
+        ).groupby("target").head(6).to_string(index=False))
     print(f"\nTabelas salvas em {D} com prefixo evidence_why_ewm3_h3_.")
 
 
