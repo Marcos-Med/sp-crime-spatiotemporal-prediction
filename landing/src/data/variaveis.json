@@ -1,0 +1,316 @@
+{
+ "fonte": "Arquivo final_model_comparison_groups_h3_ebm_importance.csv do Marcos (avaliacao = treino_final): redução de impureza no RF e magnitude dos coeficientes/splines no GAM.",
+ "observacao": "Importâncias dos modelos finais. Mostramos as principais de cada tipo de crime; a porcentagem é a parte de cada uma no peso total do modelo, e \"outras\" soma as demais. Os modelos aprendem a CORRIGIR o erro da média recente, por isso aparecem variáveis de \"erro\". Mês (seno e cosseno) foi somado em \"Época do ano\".",
+ "alvos": [
+  {
+   "id": "crime",
+   "nome": "Crime total",
+   "modelo": "Random Forest corrigindo a média recente",
+   "variaveis": [
+    {
+     "id": "crime_sazonal_12",
+     "nome": "Mesmo mês do ano anterior",
+     "grupo": "historico",
+     "importancia": 0.2091,
+     "valorOriginal": 0.209,
+     "explicacao": "Crimes no mesmo mês do ano passado, comparados à média do hexágono nos últimos 12 meses. Captura padrões que se repetem todo ano."
+    },
+    {
+     "id": "resid_lag1",
+     "nome": "Erro da média recente no mês anterior",
+     "grupo": "historico",
+     "importancia": 0.1359,
+     "valorOriginal": 0.136,
+     "explicacao": "Quanto a média recente errou no mês passado. O modelo aprende a corrigir esse erro."
+    },
+    {
+     "id": "resid_mean3",
+     "nome": "Erro médio da média recente (3 meses)",
+     "grupo": "historico",
+     "importancia": 0.0766,
+     "valorOriginal": 0.077,
+     "explicacao": "O erro da média recente nos últimos 3 meses. Mostra se ela vem errando sempre para o mesmo lado."
+    },
+    {
+     "id": "ewm3",
+     "nome": "Média recente",
+     "grupo": "historico",
+     "importancia": 0.0656,
+     "valorOriginal": 0.066,
+     "explicacao": "Média dos últimos meses, com mais peso nos mais recentes. Mostra a tendência do momento."
+    },
+    {
+     "id": "crime_razao_3_12",
+     "nome": "Últimos 3 meses contra os últimos 12",
+     "grupo": "historico",
+     "importancia": 0.061,
+     "valorOriginal": 0.061,
+     "explicacao": "Se o crime está subindo ou caindo no hexágono."
+    },
+    {
+     "id": "MES",
+     "nome": "Época do ano",
+     "grupo": "calendario",
+     "importancia": 0.098,
+     "valorOriginal": 0.098,
+     "explicacao": "O mês do ano. Alguns meses têm mais ocorrências que outros."
+    },
+    {
+     "id": "crime_media_12m_log",
+     "nome": "Média de crimes nos últimos 12 meses",
+     "grupo": "historico",
+     "importancia": 0.052,
+     "valorOriginal": 0.052,
+     "explicacao": "Quanto crime o hexágono teve no último ano."
+    },
+    {
+     "id": "crime_viz_rel",
+     "nome": "Crimes na vizinhança",
+     "grupo": "vizinhanca",
+     "importancia": 0.0488,
+     "valorOriginal": 0.049,
+     "explicacao": "Crimes nos 6 hexágonos vizinhos nos últimos 3 meses, comparados à média do próprio hexágono nos últimos 12 meses."
+    }
+   ],
+   "outras": {
+    "quantidade": 11,
+    "importancia": 0.2532,
+    "maior": 0.0339,
+    "itens": [
+     "pop_total",
+     "pct_dom_cortico",
+     "media_moradores",
+     "pct_negros",
+     "pct_jovens_15_29",
+     "pct_dom_casa",
+     "C_IPVS",
+     "pct_dom_apartamento",
+     "taxa_alfabetizacao",
+     "crime_pct_meses_12m",
+     "SEM_DOMICILIOS"
+    ]
+   },
+   "pesoBairro": 0.2524
+  },
+  {
+   "id": "furto",
+   "nome": "Furto",
+   "modelo": "Random Forest corrigindo a média recente",
+   "variaveis": [
+    {
+     "id": "furto_sazonal_12",
+     "nome": "Mesmo mês do ano anterior",
+     "grupo": "historico",
+     "importancia": 0.2049,
+     "valorOriginal": 0.205,
+     "explicacao": "Crimes no mesmo mês do ano passado, comparados à média do hexágono nos últimos 12 meses. Captura padrões que se repetem todo ano."
+    },
+    {
+     "id": "resid_lag1",
+     "nome": "Erro da média recente no mês anterior",
+     "grupo": "historico",
+     "importancia": 0.1602,
+     "valorOriginal": 0.161,
+     "explicacao": "Quanto a média recente errou no mês passado. O modelo aprende a corrigir esse erro."
+    },
+    {
+     "id": "resid_mean3",
+     "nome": "Erro médio da média recente (3 meses)",
+     "grupo": "historico",
+     "importancia": 0.1144,
+     "valorOriginal": 0.115,
+     "explicacao": "O erro da média recente nos últimos 3 meses. Mostra se ela vem errando sempre para o mesmo lado."
+    },
+    {
+     "id": "ewm3",
+     "nome": "Média recente",
+     "grupo": "historico",
+     "importancia": 0.0668,
+     "valorOriginal": 0.067,
+     "explicacao": "Média dos últimos meses, com mais peso nos mais recentes. Mostra a tendência do momento."
+    },
+    {
+     "id": "furto_razao_3_12",
+     "nome": "Últimos 3 meses contra os últimos 12",
+     "grupo": "historico",
+     "importancia": 0.0644,
+     "valorOriginal": 0.065,
+     "explicacao": "Se o crime está subindo ou caindo no hexágono."
+    },
+    {
+     "id": "furto_viz_rel",
+     "nome": "Crimes na vizinhança",
+     "grupo": "vizinhanca",
+     "importancia": 0.0571,
+     "valorOriginal": 0.057,
+     "explicacao": "Crimes nos 6 hexágonos vizinhos nos últimos 3 meses, comparados à média do próprio hexágono nos últimos 12 meses."
+    },
+    {
+     "id": "furto_media_12m_log",
+     "nome": "Média de crimes nos últimos 12 meses",
+     "grupo": "historico",
+     "importancia": 0.0564,
+     "valorOriginal": 0.057,
+     "explicacao": "Quanto crime o hexágono teve no último ano."
+    },
+    {
+     "id": "MES",
+     "nome": "Época do ano",
+     "grupo": "calendario",
+     "importancia": 0.0646,
+     "valorOriginal": 0.034,
+     "explicacao": "O mês do ano. Alguns meses têm mais ocorrências que outros."
+    },
+    {
+     "id": "pct_dom_cortico",
+     "nome": "% de domicílios em cortiços",
+     "grupo": "territorio",
+     "importancia": 0.033,
+     "valorOriginal": 0.033,
+     "explicacao": "Parcela de moradias coletivas precárias, pelo Censo 2022."
+    }
+   ],
+   "outras": {
+    "quantidade": 10,
+    "importancia": 0.1782,
+    "maior": 0.0293,
+    "itens": [
+     "pop_total",
+     "pct_dom_apartamento",
+     "media_moradores",
+     "pct_jovens_15_29",
+     "pct_negros",
+     "taxa_alfabetizacao",
+     "C_IPVS",
+     "pct_dom_casa",
+     "furto_pct_meses_12m",
+     "SEM_DOMICILIOS"
+    ]
+   },
+   "pesoBairro": 0.2099
+  },
+  {
+   "id": "roubo",
+   "nome": "Roubo",
+   "modelo": "GAM corrigindo a média recente",
+   "variaveis": [
+    {
+     "id": "ewm3",
+     "nome": "Média recente",
+     "grupo": "historico",
+     "importancia": 0.3913,
+     "valorOriginal": 0.396,
+     "explicacao": "Média dos últimos meses, com mais peso nos mais recentes. Mostra a tendência do momento."
+    },
+    {
+     "id": "roubo_media_12m_log",
+     "nome": "Média de crimes nos últimos 12 meses",
+     "grupo": "historico",
+     "importancia": 0.3244,
+     "valorOriginal": 0.328,
+     "explicacao": "Quanto crime o hexágono teve no último ano."
+    },
+    {
+     "id": "resid_lag1",
+     "nome": "Erro da média recente no mês anterior",
+     "grupo": "historico",
+     "importancia": 0.0656,
+     "valorOriginal": 0.066,
+     "explicacao": "Quanto a média recente errou no mês passado. O modelo aprende a corrigir esse erro."
+    },
+    {
+     "id": "pct_dom_apartamento",
+     "nome": "% de domicílios que são apartamentos",
+     "grupo": "territorio",
+     "importancia": 0.0423,
+     "valorOriginal": 0.042,
+     "explicacao": "Ajuda a diferenciar áreas verticalizadas, de casas e de comércio."
+    },
+    {
+     "id": "roubo_razao_3_12",
+     "nome": "Últimos 3 meses contra os últimos 12",
+     "grupo": "historico",
+     "importancia": 0.0349,
+     "valorOriginal": 0.035,
+     "explicacao": "Se o crime está subindo ou caindo no hexágono."
+    },
+    {
+     "id": "roubo_viz_rel",
+     "nome": "Crimes na vizinhança",
+     "grupo": "vizinhanca",
+     "importancia": 0.0234,
+     "valorOriginal": 0.023,
+     "explicacao": "Crimes nos 6 hexágonos vizinhos nos últimos 3 meses, comparados à média do próprio hexágono nos últimos 12 meses."
+    },
+    {
+     "id": "pct_dom_casa",
+     "nome": "% de domicílios que são casas",
+     "grupo": "territorio",
+     "importancia": 0.0201,
+     "valorOriginal": 0.02,
+     "explicacao": "Ajuda a diferenciar áreas de casas, prédios e comércio."
+    },
+    {
+     "id": "resid_mean3",
+     "nome": "Erro médio da média recente (3 meses)",
+     "grupo": "historico",
+     "importancia": 0.0179,
+     "valorOriginal": 0.018,
+     "explicacao": "O erro da média recente nos últimos 3 meses. Mostra se ela vem errando sempre para o mesmo lado."
+    },
+    {
+     "id": "pct_dom_cortico",
+     "nome": "% de domicílios em cortiços",
+     "grupo": "territorio",
+     "importancia": 0.0168,
+     "valorOriginal": 0.017,
+     "explicacao": "Parcela de moradias coletivas precárias, pelo Censo 2022."
+    }
+   ],
+   "outras": {
+    "quantidade": 9,
+    "importancia": 0.0633,
+    "maior": 0.0167,
+    "itens": [
+     "media_moradores",
+     "roubo_sazonal_12",
+     "pop_total",
+     "taxa_alfabetizacao",
+     "pct_negros",
+     "C_IPVS",
+     "pct_jovens_15_29",
+     "MES",
+     "SEM_DOMICILIOS"
+    ]
+   },
+   "pesoBairro": 0.1305
+  }
+ ],
+ "todasVariaveis": [
+  {
+   "grupo": "historico",
+   "nome": "Histórico do hexágono",
+   "itens": "média de 12 meses, variação dos últimos 3 meses contra os 12, mesmo mês do ano anterior, % de meses com crime"
+  },
+  {
+   "grupo": "vizinhanca",
+   "nome": "Vizinhança",
+   "itens": "crimes nos 6 hexágonos vizinhos nos últimos 3 meses, comparados aos do próprio hexágono"
+  },
+  {
+   "grupo": "historico",
+   "nome": "Média recente",
+   "itens": "média que dá mais peso aos últimos meses (EWM3) e os erros dela nos meses anteriores"
+  },
+  {
+   "grupo": "social",
+   "nome": "Perfil do bairro (Censo 2022 e IPVS)",
+   "itens": "IPVS, população, moradores por domicílio, % de jovens de 15 a 29 anos, alfabetização, % de pessoas pretas e pardas, % de casas, apartamentos e cortiços"
+  },
+  {
+   "grupo": "calendario",
+   "nome": "Época do ano",
+   "itens": "mês do ano"
+  }
+ ]
+}

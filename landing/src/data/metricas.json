@@ -1,0 +1,313 @@
+{
+ "fonte": "Artigo final enviado (Artigo_Pesquisa.tex, tabelas de validação e teste) e repositório do Marcos (sp-crime-spatiotemporal-prediction), commit b5f59f5 de 22/11/2026",
+ "status": "teste",
+ "observacao": "Números REAIS do teste reservado (jul/2025 a jun/2026, 15.120 pares hexágono-mês por tipo de crime), H3 resolução 7, por mês. A cada mês, o modelo usa o que aconteceu até o mês anterior; ele não prevê os 12 meses de uma vez. R², MAE e RMSE: final_model_comparison_groups_h3_summary.csv. PAI: calculado por scripts/gerar-previsoes.py nos 5% de hexágonos com maior nota prevista em cada mês, média dos 12 meses.",
+ "escala": "risco de 0 a 1",
+ "periodoValidacao": {
+  "inicio": "2024-01-01",
+  "fim": "2025-06-30"
+ },
+ "periodoTeste": {
+  "inicio": "2025-07-01",
+  "fim": "2026-06-30"
+ },
+ "testeDisponivel": true,
+ "alvos": [
+  {
+   "id": "crime",
+   "nome": "Crime total",
+   "modelos": [
+    {
+     "id": "escolhido",
+     "nome": "Random Forest corrigindo a média recente",
+     "descricao": "Modelo final, escolhido na validação.",
+     "metricas": {
+      "r2": 0.9833,
+      "mae": 0.0118,
+      "rmse": 0.0225,
+      "pai": 10.43
+     },
+     "principal": true
+    },
+    {
+     "id": "ewm3",
+     "nome": "Média recente (EWM3)",
+     "descricao": "Referência, no mesmo teste.",
+     "metricas": {
+      "r2": 0.9822,
+      "mae": 0.012,
+      "rmse": 0.0232,
+      "pai": 10.43
+     }
+    },
+    {
+     "id": "media_hex",
+     "nome": "Média do hexágono",
+     "descricao": "Referência, no mesmo teste.",
+     "metricas": {
+      "r2": 0.9709,
+      "mae": 0.0153,
+      "rmse": 0.0296,
+      "pai": 10.35
+     }
+    }
+   ],
+   "ganhos": {
+    "testeEwm3": 3.09,
+    "testeMediaFixa": 24.24,
+    "validacaoEwm3": 1.47
+   }
+  },
+  {
+   "id": "furto",
+   "nome": "Furto",
+   "modelos": [
+    {
+     "id": "escolhido",
+     "nome": "Random Forest corrigindo a média recente",
+     "descricao": "Modelo final, escolhido na validação.",
+     "metricas": {
+      "r2": 0.979,
+      "mae": 0.0134,
+      "rmse": 0.0256,
+      "pai": 11.11
+     },
+     "principal": true
+    },
+    {
+     "id": "ewm3",
+     "nome": "Média recente (EWM3)",
+     "descricao": "Referência, no mesmo teste.",
+     "metricas": {
+      "r2": 0.9781,
+      "mae": 0.0135,
+      "rmse": 0.0262,
+      "pai": 11.11
+     }
+    },
+    {
+     "id": "media_hex",
+     "nome": "Média do hexágono",
+     "descricao": "Referência, no mesmo teste.",
+     "metricas": {
+      "r2": 0.9732,
+      "mae": 0.0149,
+      "rmse": 0.029,
+      "pai": 11.01
+     }
+    }
+   ],
+   "ganhos": {
+    "testeEwm3": 2.06,
+    "testeMediaFixa": 11.52,
+    "validacaoEwm3": 0.19
+   }
+  },
+  {
+   "id": "roubo",
+   "nome": "Roubo",
+   "modelos": [
+    {
+     "id": "escolhido",
+     "nome": "GAM corrigindo a média recente",
+     "descricao": "Modelo final, escolhido na validação.",
+     "metricas": {
+      "r2": 0.9603,
+      "mae": 0.016,
+      "rmse": 0.0293,
+      "pai": 9.24
+     },
+     "principal": true
+    },
+    {
+     "id": "ewm3",
+     "nome": "Média recente (EWM3)",
+     "descricao": "Referência, no mesmo teste.",
+     "metricas": {
+      "r2": 0.957,
+      "mae": 0.0162,
+      "rmse": 0.0305,
+      "pai": 9.23
+     }
+    },
+    {
+     "id": "media_hex",
+     "nome": "Média do hexágono",
+     "descricao": "Referência, no mesmo teste.",
+     "metricas": {
+      "r2": 0.8952,
+      "mae": 0.0246,
+      "rmse": 0.0475,
+      "pai": 8.96
+     }
+    }
+   ],
+   "ganhos": {
+    "testeEwm3": 3.95,
+    "testeMediaFixa": 38.45,
+    "validacaoEwm3": 3.35
+   }
+  }
+ ],
+ "tabelasExtras": [
+  {
+   "titulo": "Validação (jan/2024 a jun/2025)",
+   "descricao": "Média de 3 períodos de 6 meses, usados para escolher o modelo de cada tipo de crime antes do teste.",
+   "alvos": [
+    {
+     "id": "crime",
+     "nome": "Crime total",
+     "modelos": [
+      {
+       "id": "escolhido",
+       "nome": "Random Forest corrigindo a média recente",
+       "descricao": "Modelo escolhido na validação: aprende o erro da média recente e soma essa correção.",
+       "principal": true,
+       "metricas": {
+        "r2": 0.9873,
+        "mae": 0.011026,
+        "rmse": 0.020056,
+        "pai": 10.33
+       }
+      },
+      {
+       "id": "ridge",
+       "nome": "Ridge corrigindo a média recente",
+       "descricao": "Mesma ideia, com um modelo linear.",
+       "metricas": {
+        "r2": 0.987136,
+        "mae": 0.01112,
+        "rmse": 0.020208,
+        "pai": 10.35
+       }
+      },
+      {
+       "id": "ewm3",
+       "nome": "Média recente (EWM3)",
+       "descricao": "Referência: média dos últimos meses, com mais peso nos mais recentes (o peso cai pela metade a cada 3 meses).",
+       "metricas": {
+        "r2": 0.986917,
+        "mae": 0.01111,
+        "rmse": 0.020363,
+        "pai": 10.33
+       }
+      },
+      {
+       "id": "media_hex",
+       "nome": "Média do hexágono",
+       "descricao": "Referência: repete a média histórica de cada hexágono.",
+       "metricas": {
+        "r2": 0.98425,
+        "mae": 0.012119,
+        "rmse": 0.022339,
+        "pai": 10.32
+       }
+      }
+     ]
+    },
+    {
+     "id": "furto",
+     "nome": "Furto",
+     "modelos": [
+      {
+       "id": "escolhido",
+       "nome": "Random Forest corrigindo a média recente",
+       "descricao": "Modelo escolhido na validação.",
+       "principal": true,
+       "metricas": {
+        "r2": 0.9829,
+        "mae": 0.012697,
+        "rmse": 0.023224,
+        "pai": 11.25
+       }
+      },
+      {
+       "id": "ridge",
+       "nome": "Ridge corrigindo a média recente",
+       "descricao": "Mesma ideia, com um modelo linear.",
+       "metricas": {
+        "r2": 0.982817,
+        "mae": 0.012755,
+        "rmse": 0.023262,
+        "pai": 11.26
+       }
+      },
+      {
+       "id": "ewm3",
+       "nome": "Média recente (EWM3)",
+       "descricao": "Referência: média dos últimos meses, com mais peso nos mais recentes.",
+       "metricas": {
+        "r2": 0.982809,
+        "mae": 0.012526,
+        "rmse": 0.023267,
+        "pai": 11.23
+       }
+      },
+      {
+       "id": "media_hex",
+       "nome": "Média do hexágono",
+       "descricao": "Referência: repete a média histórica de cada hexágono.",
+       "metricas": {
+        "r2": 0.981373,
+        "mae": 0.013064,
+        "rmse": 0.024224,
+        "pai": 11.22
+       }
+      }
+     ]
+    },
+    {
+     "id": "roubo",
+     "nome": "Roubo",
+     "modelos": [
+      {
+       "id": "escolhido",
+       "nome": "GAM corrigindo a média recente",
+       "descricao": "Modelo escolhido na validação.",
+       "principal": true,
+       "metricas": {
+        "r2": 0.9666,
+        "mae": 0.016146,
+        "rmse": 0.029356,
+        "pai": 8.98
+       }
+      },
+      {
+       "id": "ridge",
+       "nome": "Ridge corrigindo a média recente",
+       "descricao": "Mesma ideia, com um modelo linear.",
+       "metricas": {
+        "r2": 0.965982,
+        "mae": 0.01623,
+        "rmse": 0.02965,
+        "pai": 8.98
+       }
+      },
+      {
+       "id": "ewm3",
+       "nome": "Média recente (EWM3)",
+       "descricao": "Referência: média dos últimos meses, com mais peso nos mais recentes.",
+       "metricas": {
+        "r2": 0.964241,
+        "mae": 0.016441,
+        "rmse": 0.030381,
+        "pai": 8.96
+       }
+      },
+      {
+       "id": "media_hex",
+       "nome": "Média do hexágono",
+       "descricao": "Referência: repete a média histórica de cada hexágono.",
+       "metricas": {
+        "r2": 0.951243,
+        "mae": 0.018856,
+        "rmse": 0.035333,
+        "pai": 8.92
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

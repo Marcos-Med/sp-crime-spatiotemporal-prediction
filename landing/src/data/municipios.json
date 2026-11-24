@@ -1,0 +1,548 @@
+[
+ {
+  "codigo": "3503901",
+  "nome": "Arujá",
+  "hexagonos": 20,
+  "areaKm2": 105,
+  "crimes": {
+   "total": 5717,
+   "furto": 3823,
+   "roubo": 1894
+  },
+  "ipvsMedio": 3.2,
+  "taxaAlfabetizacao": 94.4,
+  "pctJovens15a29": 22.6
+ },
+ {
+  "codigo": "3505708",
+  "nome": "Barueri",
+  "hexagonos": 14,
+  "areaKm2": 73,
+  "crimes": {
+   "total": 19732,
+   "furto": 15443,
+   "roubo": 4289
+  },
+  "ipvsMedio": 2.5,
+  "taxaAlfabetizacao": 97.2,
+  "pctJovens15a29": 21.8
+ },
+ {
+  "codigo": "3506607",
+  "nome": "Biritiba-Mirim",
+  "hexagonos": 17,
+  "areaKm2": 89,
+  "crimes": {
+   "total": 879,
+   "furto": 816,
+   "roubo": 63
+  },
+  "ipvsMedio": 3.9,
+  "taxaAlfabetizacao": 93.1,
+  "pctJovens15a29": 21.0
+ },
+ {
+  "codigo": "3509007",
+  "nome": "Caieiras",
+  "hexagonos": 16,
+  "areaKm2": 84,
+  "crimes": {
+   "total": 3767,
+   "furto": 2829,
+   "roubo": 938
+  },
+  "ipvsMedio": 2.4,
+  "taxaAlfabetizacao": 96.8,
+  "pctJovens15a29": 21.4
+ },
+ {
+  "codigo": "3509205",
+  "nome": "Cajamar",
+  "hexagonos": 33,
+  "areaKm2": 173,
+  "crimes": {
+   "total": 6303,
+   "furto": 4950,
+   "roubo": 1353
+  },
+  "ipvsMedio": 3.4,
+  "taxaAlfabetizacao": 93.9,
+  "pctJovens15a29": 22.3
+ },
+ {
+  "codigo": "3510609",
+  "nome": "Carapicuíba",
+  "hexagonos": 9,
+  "areaKm2": 47,
+  "crimes": {
+   "total": 35234,
+   "furto": 20256,
+   "roubo": 14978
+  },
+  "ipvsMedio": 3.1,
+  "taxaAlfabetizacao": 96.7,
+  "pctJovens15a29": 22.4
+ },
+ {
+  "codigo": "3513009",
+  "nome": "Cotia",
+  "hexagonos": 50,
+  "areaKm2": 260,
+  "crimes": {
+   "total": 16956,
+   "furto": 11533,
+   "roubo": 5423
+  },
+  "ipvsMedio": 2.9,
+  "taxaAlfabetizacao": 95.4,
+  "pctJovens15a29": 20.8
+ },
+ {
+  "codigo": "3513801",
+  "nome": "Diadema",
+  "hexagonos": 5,
+  "areaKm2": 26,
+  "crimes": {
+   "total": 26007,
+   "furto": 13489,
+   "roubo": 12518
+  },
+  "ipvsMedio": 3.6,
+  "taxaAlfabetizacao": 96.3,
+  "pctJovens15a29": 22.4
+ },
+ {
+  "codigo": "3515004",
+  "nome": "Embu das Artes",
+  "hexagonos": 14,
+  "areaKm2": 73,
+  "crimes": {
+   "total": 19807,
+   "furto": 9521,
+   "roubo": 10286
+  },
+  "ipvsMedio": 3.6,
+  "taxaAlfabetizacao": 95.9,
+  "pctJovens15a29": 22.0
+ },
+ {
+  "codigo": "3515103",
+  "nome": "Embu-Guaçu",
+  "hexagonos": 33,
+  "areaKm2": 171,
+  "crimes": {
+   "total": 3679,
+   "furto": 2607,
+   "roubo": 1072
+  },
+  "ipvsMedio": 3.8,
+  "taxaAlfabetizacao": 93.0,
+  "pctJovens15a29": 20.7
+ },
+ {
+  "codigo": "3515707",
+  "nome": "Ferraz de Vasconcelos",
+  "hexagonos": 3,
+  "areaKm2": 16,
+  "crimes": {
+   "total": 11699,
+   "furto": 6935,
+   "roubo": 4764
+  },
+  "ipvsMedio": 3.9,
+  "taxaAlfabetizacao": 95.8,
+  "pctJovens15a29": 23.6
+ },
+ {
+  "codigo": "3516309",
+  "nome": "Francisco Morato",
+  "hexagonos": 12,
+  "areaKm2": 63,
+  "crimes": {
+   "total": 9172,
+   "furto": 5521,
+   "roubo": 3651
+  },
+  "ipvsMedio": 4.5,
+  "taxaAlfabetizacao": 90.9,
+  "pctJovens15a29": 23.1
+ },
+ {
+  "codigo": "3516408",
+  "nome": "Franco da Rocha",
+  "hexagonos": 18,
+  "areaKm2": 94,
+  "crimes": {
+   "total": 8128,
+   "furto": 5621,
+   "roubo": 2507
+  },
+  "ipvsMedio": 3.7,
+  "taxaAlfabetizacao": 93.8,
+  "pctJovens15a29": 22.2
+ },
+ {
+  "codigo": "3518305",
+  "nome": "Guararema",
+  "hexagonos": 48,
+  "areaKm2": 251,
+  "crimes": {
+   "total": 1438,
+   "furto": 1212,
+   "roubo": 226
+  },
+  "ipvsMedio": 3.2,
+  "taxaAlfabetizacao": 93.8,
+  "pctJovens15a29": 19.3
+ },
+ {
+  "codigo": "3518800",
+  "nome": "Guarulhos",
+  "hexagonos": 47,
+  "areaKm2": 246,
+  "crimes": {
+   "total": 107478,
+   "furto": 76105,
+   "roubo": 31373
+  },
+  "ipvsMedio": 3.7,
+  "taxaAlfabetizacao": 95.3,
+  "pctJovens15a29": 22.8
+ },
+ {
+  "codigo": "3522208",
+  "nome": "Itapecerica da Serra",
+  "hexagonos": 32,
+  "areaKm2": 166,
+  "crimes": {
+   "total": 14340,
+   "furto": 6900,
+   "roubo": 7440
+  },
+  "ipvsMedio": 3.5,
+  "taxaAlfabetizacao": 94.9,
+  "pctJovens15a29": 21.4
+ },
+ {
+  "codigo": "3522505",
+  "nome": "Itapevi",
+  "hexagonos": 18,
+  "areaKm2": 94,
+  "crimes": {
+   "total": 14441,
+   "furto": 9537,
+   "roubo": 4904
+  },
+  "ipvsMedio": 4.0,
+  "taxaAlfabetizacao": 95.4,
+  "pctJovens15a29": 22.5
+ },
+ {
+  "codigo": "3523107",
+  "nome": "Itaquaquecetuba",
+  "hexagonos": 16,
+  "areaKm2": 84,
+  "crimes": {
+   "total": 27572,
+   "furto": 15380,
+   "roubo": 12192
+  },
+  "ipvsMedio": 4.1,
+  "taxaAlfabetizacao": 95.0,
+  "pctJovens15a29": 23.8
+ },
+ {
+  "codigo": "3525003",
+  "nome": "Jandira",
+  "hexagonos": 2,
+  "areaKm2": 10,
+  "crimes": {
+   "total": 4902,
+   "furto": 3447,
+   "roubo": 1455
+  },
+  "ipvsMedio": 3.5,
+  "taxaAlfabetizacao": 96.6,
+  "pctJovens15a29": 23.3
+ },
+ {
+  "codigo": "3526209",
+  "nome": "Juquitiba",
+  "hexagonos": 71,
+  "areaKm2": 367,
+  "crimes": {
+   "total": 1967,
+   "furto": 1482,
+   "roubo": 485
+  },
+  "ipvsMedio": 4.2,
+  "taxaAlfabetizacao": 90.2,
+  "pctJovens15a29": 19.6
+ },
+ {
+  "codigo": "3528502",
+  "nome": "Mairiporã",
+  "hexagonos": 62,
+  "areaKm2": 325,
+  "crimes": {
+   "total": 4901,
+   "furto": 3630,
+   "roubo": 1271
+  },
+  "ipvsMedio": 2.7,
+  "taxaAlfabetizacao": 94.6,
+  "pctJovens15a29": 19.7
+ },
+ {
+  "codigo": "3529401",
+  "nome": "Mauá",
+  "hexagonos": 11,
+  "areaKm2": 57,
+  "crimes": {
+   "total": 33391,
+   "furto": 21651,
+   "roubo": 11740
+  },
+  "ipvsMedio": 3.4,
+  "taxaAlfabetizacao": 96.6,
+  "pctJovens15a29": 22.0
+ },
+ {
+  "codigo": "3530607",
+  "nome": "Mogi das Cruzes",
+  "hexagonos": 101,
+  "areaKm2": 527,
+  "crimes": {
+   "total": 28051,
+   "furto": 22582,
+   "roubo": 5469
+  },
+  "ipvsMedio": 3.5,
+  "taxaAlfabetizacao": 93.7,
+  "pctJovens15a29": 21.4
+ },
+ {
+  "codigo": "3534401",
+  "nome": "Osasco",
+  "hexagonos": 11,
+  "areaKm2": 57,
+  "crimes": {
+   "total": 68076,
+   "furto": 47184,
+   "roubo": 20892
+  },
+  "ipvsMedio": 2.8,
+  "taxaAlfabetizacao": 97.1,
+  "pctJovens15a29": 21.1
+ },
+ {
+  "codigo": "3539103",
+  "nome": "Pirapora do Bom Jesus",
+  "hexagonos": 13,
+  "areaKm2": 68,
+  "crimes": {
+   "total": 475,
+   "furto": 387,
+   "roubo": 88
+  },
+  "ipvsMedio": 4.7,
+  "taxaAlfabetizacao": 92.1,
+  "pctJovens15a29": 21.0
+ },
+ {
+  "codigo": "3539806",
+  "nome": "Poá",
+  "hexagonos": 4,
+  "areaKm2": 21,
+  "crimes": {
+   "total": 9873,
+   "furto": 5898,
+   "roubo": 3975
+  },
+  "ipvsMedio": 3.1,
+  "taxaAlfabetizacao": 96.9,
+  "pctJovens15a29": 22.3
+ },
+ {
+  "codigo": "3543303",
+  "nome": "Ribeirão Pires",
+  "hexagonos": 18,
+  "areaKm2": 94,
+  "crimes": {
+   "total": 4956,
+   "furto": 3520,
+   "roubo": 1436
+  },
+  "ipvsMedio": 2.6,
+  "taxaAlfabetizacao": 96.6,
+  "pctJovens15a29": 19.5
+ },
+ {
+  "codigo": "3544103",
+  "nome": "Rio Grande da Serra",
+  "hexagonos": 9,
+  "areaKm2": 47,
+  "crimes": {
+   "total": 1463,
+   "furto": 1203,
+   "roubo": 260
+  },
+  "ipvsMedio": 3.6,
+  "taxaAlfabetizacao": 95.3,
+  "pctJovens15a29": 22.0
+ },
+ {
+  "codigo": "3545001",
+  "nome": "Salesópolis",
+  "hexagonos": 22,
+  "areaKm2": 115,
+  "crimes": {
+   "total": 544,
+   "furto": 505,
+   "roubo": 39
+  },
+  "ipvsMedio": 4.0,
+  "taxaAlfabetizacao": 91.9,
+  "pctJovens15a29": 19.4
+ },
+ {
+  "codigo": "3546801",
+  "nome": "Santa Isabel",
+  "hexagonos": 0,
+  "areaKm2": 0,
+  "crimes": {
+   "total": 0,
+   "furto": 0,
+   "roubo": 0
+  },
+  "ipvsMedio": null,
+  "taxaAlfabetizacao": null,
+  "pctJovens15a29": null
+ },
+ {
+  "codigo": "3547304",
+  "nome": "Santana de Parnaíba",
+  "hexagonos": 33,
+  "areaKm2": 172,
+  "crimes": {
+   "total": 4189,
+   "furto": 3514,
+   "roubo": 675
+  },
+  "ipvsMedio": 2.7,
+  "taxaAlfabetizacao": 96.5,
+  "pctJovens15a29": 20.7
+ },
+ {
+  "codigo": "3547809",
+  "nome": "Santo André",
+  "hexagonos": 33,
+  "areaKm2": 172,
+  "crimes": {
+   "total": 93806,
+   "furto": 61062,
+   "roubo": 32744
+  },
+  "ipvsMedio": 2.7,
+  "taxaAlfabetizacao": 96.7,
+  "pctJovens15a29": 19.8
+ },
+ {
+  "codigo": "3552502",
+  "nome": "Suzano",
+  "hexagonos": 41,
+  "areaKm2": 214,
+  "crimes": {
+   "total": 26093,
+   "furto": 17094,
+   "roubo": 8999
+  },
+  "ipvsMedio": 3.5,
+  "taxaAlfabetizacao": 95.0,
+  "pctJovens15a29": 21.7
+ },
+ {
+  "codigo": "3548708",
+  "nome": "São Bernardo do Campo",
+  "hexagonos": 60,
+  "areaKm2": 311,
+  "crimes": {
+   "total": 73419,
+   "furto": 45476,
+   "roubo": 27943
+  },
+  "ipvsMedio": 3.0,
+  "taxaAlfabetizacao": 96.0,
+  "pctJovens15a29": 20.7
+ },
+ {
+  "codigo": "3548807",
+  "nome": "São Caetano do Sul",
+  "hexagonos": 2,
+  "areaKm2": 10,
+  "crimes": {
+   "total": 10166,
+   "furto": 7897,
+   "roubo": 2269
+  },
+  "ipvsMedio": 1.8,
+  "taxaAlfabetizacao": 98.6,
+  "pctJovens15a29": 16.8
+ },
+ {
+  "codigo": "3549953",
+  "nome": "São Lourenço da Serra",
+  "hexagonos": 24,
+  "areaKm2": 124,
+  "crimes": {
+   "total": 1002,
+   "furto": 705,
+   "roubo": 297
+  },
+  "ipvsMedio": 3.6,
+  "taxaAlfabetizacao": 92.4,
+  "pctJovens15a29": 19.9
+ },
+ {
+  "codigo": "3550308",
+  "nome": "São Paulo",
+  "hexagonos": 273,
+  "areaKm2": 1421,
+  "crimes": {
+   "total": 1866682,
+   "furto": 1275984,
+   "roubo": 590698
+  },
+  "ipvsMedio": 2.9,
+  "taxaAlfabetizacao": 96.3,
+  "pctJovens15a29": 21.3
+ },
+ {
+  "codigo": "3552809",
+  "nome": "Taboão da Serra",
+  "hexagonos": 4,
+  "areaKm2": 21,
+  "crimes": {
+   "total": 21534,
+   "furto": 11371,
+   "roubo": 10163
+  },
+  "ipvsMedio": 3.6,
+  "taxaAlfabetizacao": 96.6,
+  "pctJovens15a29": 23.1
+ },
+ {
+  "codigo": "3556453",
+  "nome": "Vargem Grande Paulista",
+  "hexagonos": 9,
+  "areaKm2": 47,
+  "crimes": {
+   "total": 2214,
+   "furto": 1658,
+   "roubo": 556
+  },
+  "ipvsMedio": 2.5,
+  "taxaAlfabetizacao": 96.0,
+  "pctJovens15a29": 20.8
+ }
+]
