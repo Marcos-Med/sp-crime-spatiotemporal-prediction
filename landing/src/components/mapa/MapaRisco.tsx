@@ -1,3 +1,4 @@
+// Mapa de calor: desenha os hexágonos H3 e colore pela nota de risco.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import maplibregl, { type GeoJSONSource, type Map as MapaML, type StyleSpecification } from 'maplibre-gl';
 import { cellToBoundary } from 'h3-js';
@@ -23,7 +24,6 @@ function limitesDe(geom: GeoJSON.Geometry): [[number, number], [number, number]]
   return [[x0, y0], [x1, y1]];
 }
 
-
 export default function MapaRisco({ dados }: { dados: Dados }) {
   const { previsoes, municipios, contornos } = dados;
   const caixa = useRef<HTMLDivElement>(null);
@@ -36,7 +36,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
   const dicaRef = useRef<HTMLDivElement>(null);
   const alvoRef = useRef('');
 
-  // refs para os handlers do mapa enxergarem o estado atual
   const estado = useRef({ municipio, painel });
   estado.current = { municipio, painel };
 
@@ -47,7 +46,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
   alvoRef.current = nomeAlvo;
   const periodo = descreverFiltro(filtro, previsoes.meses);
 
-  // geometria dos hexágonos (calculada uma vez a partir do índice H3)
   const hexGeo = useMemo<GeoJSON.FeatureCollection<GeoJSON.Polygon>>(() => ({
     type: 'FeatureCollection',
     features: previsoes.hexagonos.map((h, i) => {
@@ -71,7 +69,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
   const selecionarRef = useRef(selecionar);
   selecionarRef.current = selecionar;
 
-  // cria o mapa
   useEffect(() => {
     if (!caixa.current) return;
     const m = new maplibregl.Map({
@@ -95,7 +92,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     mapa.current = m;
 
-    // Se o mapa de fundo não carregar (sem internet, bloqueio), segue só com os contornos.
     let carregou = false;
     const usarSemFundo = () => { if (!carregou) { carregou = true; m.setStyle(ESTILO_VAZIO); } };
     const tempo = USAR_MAPA_BASE ? window.setTimeout(usarSemFundo, 8000) : 0;
@@ -106,7 +102,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
       window.clearTimeout(tempo);
       m.addSource('municipios', { type: 'geojson', data: contornos, promoteId: 'codigo' });
       m.addSource('hex', { type: 'geojson', data: hexGeo });
-      // nossas camadas entram abaixo dos nomes do mapa de fundo
       const antesDe = m.getStyle().layers.find((l) => l.type === 'symbol')?.id;
       m.addLayer({ id: 'mun-fundo', type: 'fill', source: 'municipios', paint: { 'fill-color': '#8a93a8', 'fill-opacity': USAR_MAPA_BASE ? 0.02 : 0.12 } }, antesDe);
       m.addLayer({ id: 'hex', type: 'fill', source: 'hex', paint: { 'fill-color': CORES_RISCO[0], 'fill-opacity': 0.85 } }, antesDe);
@@ -117,11 +112,9 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
       m.on('click', 'mun-fundo', (e) => {
         const codigo = e.features?.[0]?.properties?.codigo as string | undefined;
         if (!codigo) return;
-        // 1º clique: zoom no município. 2º clique no mesmo: abre os metadados.
         if (estado.current.municipio === codigo) selecionarRef.current(codigo, true);
         else selecionarRef.current(codigo, false);
       });
-      // Dica do mouse: atualizada direto no DOM (sem re-renderizar o React) e no máximo 1x por quadro.
       let hoverId: number | null = null;
       let quadro = 0;
       let ultimo: { x: number; y: number; f: maplibregl.MapGeoJSONFeature } | null = null;
@@ -136,7 +129,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
           m.setFeatureState({ source: 'hex', id }, { hover: true });
           hoverId = id;
         }
-        // texto refeito a cada quadro: o tipo de crime ou o período podem ter mudado no mesmo hexágono
         d.innerHTML = `Nota de risco <strong>${fmt(Number(f.properties.v), 2)}</strong><span>${alvoRef.current} · ${nomePorCodigo[f.properties.m] ?? ''}</span>` +
           (Number(f.properties.imp) ? '<span>Inclui as ocorrências da cidade sem endereço exato: nota inflada.</span>' : '');
         d.style.transform = `translate(${x + 14}px, ${y - 12}px) translateY(-100%)`;
@@ -163,7 +155,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
     return () => { window.clearTimeout(tempo); m.remove(); mapa.current = null; setPronto(false); };
   }, [contornos, hexGeo, nomePorCodigo]);
 
-  // atualiza valores e cores quando o período muda
   useEffect(() => {
     const m = mapa.current;
     if (!m || !pronto) return;
@@ -175,7 +166,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
     ]);
   }, [pronto, valores, cortes, hexGeo]);
 
-  // destaca o município escolhido
   useEffect(() => {
     const m = mapa.current;
     if (!m || !pronto) return;
@@ -190,14 +180,12 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
     mq.addEventListener('change', aplicarCorLinha);
     const obs = new MutationObserver(aplicarCorLinha);
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    // transparência automática: mais forte com o mapa afastado, mais transparente ao aproximar
     const dentro = ['==', ['get', 'm'], municipio];
     const passos = OPACIDADE_HEX_POR_ZOOM.flatMap(([z, o]) => [z, municipio ? ['case', dentro, o, o * 0.2] : o]);
     m.setPaintProperty('hex', 'fill-opacity', ['interpolate', ['linear'], ['zoom'], ...passos] as never);
     return () => { mq.removeEventListener('change', aplicarCorLinha); obs.disconnect(); };
   }, [pronto, municipio]);
 
-  // números de resumo
   const resumo = useMemo(() => {
     const porMun: Record<string, ResumoMunicipio> = {};
     let soma = 0, muitoAlto = 0;
@@ -207,11 +195,10 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
       soma += v;
       if (c === 4) muitoAlto++;
       const r = (porMun[h.municipio] ??= { media: 0, porClasse: [0, 0, 0, 0, 0], maiorHex: null });
-      r.media += v; // vira média logo abaixo
+      r.media += v;
       r.porClasse[c]++;
       if (!r.maiorHex || v > r.maiorHex.valor) r.maiorHex = { h3: h.h3, valor: v };
     });
-    // a nota não é contagem: resumimos pela média, nunca pela soma
     for (const r of Object.values(porMun)) r.media /= r.porClasse.reduce((a, b) => a + b, 0) || 1;
     const media = soma / (previsoes.hexagonos.length || 1);
     const lider = Object.entries(porMun).sort((a, b) => b[1].media - a[1].media)[0];
@@ -222,7 +209,6 @@ export default function MapaRisco({ dados }: { dados: Dados }) {
   const resumoSel = municipio ? resumo.porMun[municipio] : null;
   const limitesLegenda = [0, ...cortes];
   const casasLegenda = cortes[3] < 0.1 ? 3 : 2;
-  // cortes pequenos (ex.: 0,004) ganham 3 casas para a faixa "Muito baixo" não virar "0,00–0,00"
   const fmtCorte = (v: number) => (v <= 0 ? '0' : fmt(v, v < 0.01 ? 3 : casasLegenda));
 
   return (

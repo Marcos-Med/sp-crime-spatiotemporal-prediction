@@ -1,3 +1,4 @@
+// Carrega os dados e monta as seções da página.
 import { useEffect, useState } from 'react';
 import type { ArquivoMetricas, ArquivoPrevisoes, ArquivoVariaveis, MetadadosMunicipio } from './types/dados';
 import { buscarContornosMunicipios, buscarMetricas, buscarMunicipios, buscarPrevisoes, buscarVariaveis } from './services/api';

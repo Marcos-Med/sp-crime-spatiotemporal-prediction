@@ -1,3 +1,4 @@
+// Rodapé da página.
 export default function Rodape() {
   return (
     <footer className="rodape">

@@ -1,14 +1,6 @@
-"""Gera src/data/previsoes.json com as previsões REAIS do teste e completa src/data/metricas.json.
+"""Gera src/data/previsoes.json e completa src/data/metricas.json.
 
-Uso:
-    python scripts/gerar-previsoes.py <pasta do repo do Marcos>/datasets
-
-Arquivos lidos (saídas de processing_datasets/final_model_comparison_groups_h3.py):
-  - final_model_comparison_groups_h3_predictions.csv  notas previstas por hexágono e mês
-  - final_model_comparison_groups_h3_summary.csv      modelo escolhido na validação e métricas do teste
-  - database_processed_h3_risk.csv                     contagens reais (para o PAI) e cidade de cada hexágono
-
-O mapa mostra, para cada tipo de crime, o modelo escolhido na validação, no teste reservado (jul/2025 a jun/2026).
+Uso: python scripts/gerar-previsoes.py <pasta datasets>
 """
 import importlib.util
 import json
@@ -24,30 +16,21 @@ RAIZ = Path(__file__).resolve().parent.parent
 SAIDA_PREV = RAIZ / 'src' / 'data' / 'previsoes.json'
 METRICAS = RAIZ / 'src' / 'data' / 'metricas.json'
 
-ALVOS = [  # id na página, alvo no modelo, coluna de contagem, nome
+ALVOS = [
     ('crime', 'RISCO_CRIME', 'CNT_CRIME_COUNT', 'Crime total'),
     ('furto', 'RISCO_FURTO', 'FURTO_COUNT', 'Furto'),
     ('roubo', 'RISCO_ROUBO', 'ROUBO_COUNT', 'Roubo'),
 ]
 REFERENCIAS = {'ewm3': 'EWM3', 'media_hex': 'media_historica_fixa'}
-# na tabela de validação também aparece o Ridge (variante com grupo alto/baixo, a que bate com as métricas mostradas)
 REFERENCIAS_VALIDACAO = {**REFERENCIAS, 'ridge': 'Ridge_resid_alto_HurdleNB_baixo'}
-FATIA_PAI = 0.05  # PAI nos 5% de hexágonos com maior nota prevista em cada mês
+FATIA_PAI = 0.05
 
-# reaproveita o mapeamento cidade -> código IBGE de gerar-municipios.py
 _spec = importlib.util.spec_from_file_location('mun', RAIZ / 'scripts' / 'gerar-municipios.py')
 mun = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mun)
 
 
 def celulas_com_imputacao(d: Path) -> set:
-    """Hexágonos dominados pelo ponto onde o pipeline pôs as ocorrências sem coordenada.
-
-    Registros sem posição válida recebem a mediana das coordenadas da própria cidade. Em cada cidade, esse é o ponto
-    mais repetido da base. Marcamos a célula desse ponto quando ele responde por pelo menos 30% das ocorrências dela
-    (na capital, um único ponto tem 307 mil ocorrências, 79% da célula). Usa database_processed_h3.csv, que tem as
-    coordenadas de cada registro; se o arquivo não existir, nada é marcado.
-    """
     f = d / 'database_processed_h3.csv'
     if not f.exists():
         print(f'aviso: {f.name} não encontrado; células com coordenadas imputadas não serão marcadas')
@@ -63,7 +46,6 @@ def celulas_com_imputacao(d: Path) -> set:
 
 
 def pai(df: pd.DataFrame, col_pred: str, col_real: str, area: pd.Series) -> float:
-    """Média mensal de (fração dos crimes nos hexágonos do topo) / (fração da área que eles ocupam)."""
     valores = []
     for _, m in df.groupby('DATA'):
         n = max(1, math.ceil(FATIA_PAI * len(m)))
@@ -115,7 +97,6 @@ def main(pasta: str) -> None:
         for h, linha in tabela.iterrows():
             risco[h][alvo_id] = [round(min(1.0, max(0.0, float(v))), 3) for v in linha]
 
-        # métricas: PAI calculado aqui; MAE, R² e RMSE vêm do resumo do Marcos
         bloco = next(a for a in metricas['alvos'] if a['id'] == alvo_id)
         por_modelo = linhas_teste.set_index('modelo')
         for m in bloco['modelos']:
@@ -130,7 +111,6 @@ def main(pasta: str) -> None:
         print(f'{nome}: modelo {escolhido} | PAI {FATIA_PAI:.0%} no teste = ' +
               ', '.join(f"{m['id']} {m['metricas']['pai']}" for m in bloco['modelos']))
 
-        # PAI da validação (3 folds de 6 meses, jan/2024 a jun/2025): média dos 18 meses = média dos 3 folds
         pv = validacao[validacao.target.eq(alvo)].merge(real[['H3', 'DATA', col_real]], on=['H3', 'DATA'], how='left')
         for tabela_extra in metricas.get('tabelasExtras', []):
             bloco_v = next((a for a in tabela_extra['alvos'] if a['id'] == alvo_id), None)
@@ -149,7 +129,6 @@ def main(pasta: str) -> None:
         'unidade': 'nota de risco de 0 a 1 por hexágono e por mês (modelo escolhido na validação, teste reservado)',
         'meses': nomes_meses,
         'alvos': [{'id': a, 'nome': n} for a, _, _, n in ALVOS],
-        # o mapa mostra só as células dentro da RMSP; as métricas acima usam as 1.260 células do modelo
         'hexagonos': [{'h3': h, 'municipio': municipio[h], 'risco': risco[h], **({'imputado': True} if h in imputadas else {})}
                       for h in hexes if municipio[h] and h in na_regiao],
     }

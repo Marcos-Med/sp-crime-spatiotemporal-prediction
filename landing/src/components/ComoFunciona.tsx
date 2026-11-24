@@ -1,3 +1,4 @@
+// Seção que explica o projeto em linguagem simples.
 const PASSOS = [
   {
     titulo: 'Dividimos o mapa em hexágonos',

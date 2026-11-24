@@ -1,25 +1,19 @@
-// O modelo prevê uma nota de risco de 0 a 1 por hexágono e por MÊS. Aqui convertemos para os filtros da página:
-//  - mês: a nota daquele mês;
-//  - ano: média das notas dos meses daquele ano dentro do período de teste;
-//  - 12 meses: média de todo o período de teste.
-// A nota não é contagem de crimes, então os períodos usam média, nunca soma.
+// Filtro de tempo: nota do mês ou média do ano ou dos 12 meses.
 import type { ArquivoPrevisoes } from '../types/dados';
 
 export type TipoFiltro = 'mes' | 'ano' | 'tudo';
 export interface FiltroTempo {
   tipo: TipoFiltro;
-  mes: string; // "AAAA-MM"
+  mes: string;
   ano: number;
 }
 
-/** Índices dos meses usados pelo filtro. */
 export function mesesDoFiltro(meses: string[], f: FiltroTempo): number[] {
   if (f.tipo === 'mes') return meses.flatMap((m, i) => (m === f.mes ? [i] : []));
   if (f.tipo === 'ano') return meses.flatMap((m, i) => (m.startsWith(String(f.ano)) ? [i] : []));
   return meses.map((_, i) => i);
 }
 
-/** Nota média de cada hexágono no período, para um tipo de crime. */
 export function valoresDoFiltro(dados: ArquivoPrevisoes, alvo: string, f: FiltroTempo): Float64Array {
   const sel = mesesDoFiltro(dados.meses, f);
   const out = new Float64Array(dados.hexagonos.length);
@@ -59,7 +53,6 @@ export const AVISO_PRECISAO: Record<TipoFiltro, string> = {
   tudo: 'Média das notas dos 12 meses do teste. Mostra onde o risco ficou alto de forma persistente.',
 };
 
-// Explicação curta da nota, usada no mapa.
 export const SOBRE_A_NOTA =
   'A nota vai de 0 a 1 e cresce com o número de crimes esperado no hexágono naquele mês. Ela chega a 0,5 quando esse ' +
   'número é igual ao percentil 90 dos meses com pelo menos um crime no treino (um valor para cada tipo de crime). ' +

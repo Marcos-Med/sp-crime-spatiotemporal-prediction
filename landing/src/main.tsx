@@ -1,3 +1,4 @@
+// Ponto de entrada: inicia o React e carrega os estilos.
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import 'maplibre-gl/dist/maplibre-gl.css';

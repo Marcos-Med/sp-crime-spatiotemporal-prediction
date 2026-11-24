@@ -1,4 +1,4 @@
-/* Layout: faixa de cabeçalho fixa, seções empilhadas de largura limitada, mapa em destaque com painel lateral. */
+/* Estilos da página. */
 :root {
   --bg: #f4f5f8;
   --bg-alt: #e9ecf3;
@@ -41,7 +41,6 @@ html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 body { margin: 0; background: var(--bg); color: var(--tinta); font: 400 17px/1.6 var(--f-texto); -webkit-font-smoothing: antialiased; }
 h1, h2, h3, h4 { font-family: var(--f-titulo); line-height: 1.12; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
 h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -0.025em; }
-/* o gancho do "f" da Bricolage em 800 encosta na letra seguinte com o espaçamento negativo */
 .letra-f { margin-right: 0.06em; }
 h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 700; }
 h3 { font-size: 1.15rem; font-weight: 700; }
@@ -53,7 +52,6 @@ a { color: var(--acento); }
 .sobretitulo { font: 600 0.78rem/1 var(--f-dados); text-transform: uppercase; letter-spacing: 0.1em; color: var(--tinta-2); margin-bottom: 0.9rem; }
 .intro { max-width: 65ch; color: var(--tinta-2); margin-top: 1rem; }
 
-/* cabeçalho */
 .cabecalho { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--linha); }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--bg); }
 .cabecalho-int { max-width: var(--largura); margin: 0 auto; display: flex; align-items: center; gap: 1.5rem; padding-block: 0.8rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -64,7 +62,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .selo-mock { font: 600 0.72rem/1 var(--f-dados); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.4rem 0.6rem; border-radius: 999px; background: color-mix(in srgb, var(--risco-1) 30%, transparent); color: var(--tinta); border: 1px dashed var(--risco-2); white-space: nowrap; }
 @media (max-width: 860px) { .cabecalho nav { display: none; } .selo-mock { margin-left: auto; } }
 
-/* hero */
 .hero { border-bottom: 1px solid var(--linha); background:
   radial-gradient(60% 80% at 85% 30%, color-mix(in srgb, var(--risco-2) 14%, transparent), transparent 70%), var(--bg); }
 .hero-int { max-width: var(--largura); margin: 0 auto; display: grid; grid-template-columns: 1.05fr 1fr; gap: 3rem; align-items: center; padding-block: 4.5rem 4rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -94,7 +91,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .botao-sec:hover { border-color: var(--tinta-2); filter: none; }
 .botao-peq { padding: 0.45rem 0.8rem; font-size: 0.9rem; }
 
-/* seções */
 .secao-int { max-width: var(--largura); margin: 0 auto; padding-block: 5rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .secao-alt { background: var(--bg-alt); border-block: 1px solid var(--linha); }
 .carregando { text-align: center; padding: 4rem 16px; color: var(--tinta-2); }
@@ -109,7 +105,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 @media (max-width: 960px) { .passos { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .passos { grid-template-columns: 1fr; } }
 
-/* mapa */
 .filtros { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin-top: 2rem; align-items: end; }
 .grupo-filtro { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; min-width: 0; }
 .grupo-filtro legend { font: 600 0.72rem/1 var(--f-dados); text-transform: uppercase; letter-spacing: 0.08em; color: var(--tinta-2); margin-bottom: 0.5rem; padding: 0; }
@@ -151,7 +146,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .aviso-precisao { margin-top: 1rem; font-size: 0.92rem; color: var(--tinta-2); max-width: 80ch; }
 .aviso-precisao strong { color: var(--tinta); }
 
-/* painel do município */
 .painel { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio); padding: 1.2rem; display: grid; gap: 0.9rem; align-content: start; box-shadow: var(--sombra); min-width: 0; max-height: min(640px, 72vh); overflow-y: auto; }
 @media (max-width: 900px) { .painel { max-height: none; } }
 .painel-topo { display: flex; justify-content: space-between; align-items: start; gap: 1rem; }
@@ -172,7 +166,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .lista-metricas { grid-template-columns: repeat(4, 1fr); }
 .lista-motivos { margin: 0; padding-left: 1.1rem; font-size: 0.92rem; }
 
-/* explicabilidade */
 .grupos-resumo { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 2rem; }
 .grupo-chip { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.55rem 0.9rem; border-radius: 8px; background: var(--superficie); border: 1px solid var(--linha); border-left: 4px solid var(--g-social); }
 .grupo-chip.grupo-historico { border-left-color: var(--g-historico); }
@@ -210,11 +203,9 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .glossario dt { font: 700 1.1rem var(--f-dados); }
 .glossario dd { margin: 0.3rem 0 0; font-size: 0.92rem; color: var(--tinta-2); }
 
-/* limitações */
 .limites { list-style: none; padding: 0; margin: 2.5rem 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--linha); border: 1px solid var(--linha); border-radius: var(--raio); overflow: hidden; }
 .limites li { background: var(--bg); padding: 1.5rem; display: grid; gap: 0.5rem; align-content: start; }
 .limites p { color: var(--tinta-2); font-size: 0.96rem; }
-/* o último cartão ocupa o resto da linha, para não sobrar célula vazia na grade */
 .limites li:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
 .limites li:last-child:nth-child(3n+2) { grid-column: span 2; }
 @media (max-width: 900px) {
@@ -224,7 +215,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 }
 @media (max-width: 560px) { .limites { grid-template-columns: 1fr; } .limites li:last-child { grid-column: auto; } }
 
-/* rodapé */
 .rodape { border-top: 1px solid var(--linha); background: var(--bg-alt); }
 .rodape-int { max-width: var(--largura); margin: 0 auto; padding-block: 2.5rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 0.4rem; font-size: 0.9rem; color: var(--tinta-2); }
 .rodape-int strong { color: var(--tinta); }
@@ -232,7 +222,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 
 .maplibregl-ctrl-attrib { font-size: 0.7rem; }
 
-/* selos de origem dos dados */
 .selo { display: inline-block; margin-left: 0.5rem; padding: 0.2rem 0.45rem; border-radius: 999px; font: 600 0.62rem/1 var(--f-dados); letter-spacing: 0.06em; vertical-align: 1px; }
 .selo-real { background: color-mix(in srgb, var(--g-territorio) 18%, transparent); color: var(--tinta); border: 1px solid var(--g-territorio); }
 .selo-ficticio { background: color-mix(in srgb, var(--risco-1) 30%, transparent); color: var(--tinta); border: 1px dashed var(--risco-2); }
@@ -253,7 +242,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .dados-reais dt { font: 600 1.5rem var(--f-dados); font-variant-numeric: tabular-nums; }
 .dados-reais dd { margin: 0.2rem 0 0; color: var(--tinta-2); font-size: 0.92rem; }
 
-/* resultados */
 .limites.respostas { grid-template-columns: 1fr 1fr; }
 .limites.respostas li:last-child { grid-column: auto; }
 @media (max-width: 560px) { .limites.respostas { grid-template-columns: 1fr; } }

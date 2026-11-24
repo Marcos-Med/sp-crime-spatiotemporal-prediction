@@ -1,3 +1,4 @@
+// Filtros do mapa: tipo de crime, período e município.
 import type { FiltroTempo, TipoFiltro } from '../../lib/periodo';
 import { anosDisponiveis, nomeMes } from '../../lib/periodo';
 import type { AlvoMapa, MetadadosMunicipio } from '../../types/dados';

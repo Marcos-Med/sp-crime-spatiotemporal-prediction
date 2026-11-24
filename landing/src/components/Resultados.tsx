@@ -1,7 +1,7 @@
+// Seção com os resultados e as respostas do artigo.
 import type { ArquivoMetricas } from '../types/dados';
 import { fmt } from '../lib/cores';
 
-// As quatro perguntas do artigo e a resposta de cada uma (seções de resultados e conclusão).
 const RESPOSTAS = [
   {
     pergunta: 'Os modelos superam regras simples?',

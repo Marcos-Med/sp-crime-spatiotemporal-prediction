@@ -1,3 +1,4 @@
+// Seção de limitações e próximos passos.
 const LIMITES = [
   {
     titulo: 'Ganho pequeno sobre uma regra simples',

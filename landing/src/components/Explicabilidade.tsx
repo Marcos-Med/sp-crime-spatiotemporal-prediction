@@ -1,3 +1,4 @@
+// Seção com o peso das variáveis e a comparação com as referências.
 import { useState } from 'react';
 import type { AlvoMetricas, ArquivoMetricas, ArquivoVariaveis, GrupoVariavel, Metricas } from '../types/dados';
 import { fmt } from '../lib/cores';

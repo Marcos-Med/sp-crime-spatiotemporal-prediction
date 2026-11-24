@@ -1,3 +1,4 @@
+// Topo da página, com a arte da Grande São Paulo em hexágonos.
 import { useEffect, useMemo, useRef } from 'react';
 import { cellToBoundary } from 'h3-js';
 import type { Dados } from '../App';
@@ -6,21 +7,18 @@ import { mesCurto, valoresDoFiltro } from '../lib/periodo';
 
 const W = 640, H = 460, MARGEM = 14;
 
-// Arte do topo: a Grande São Paulo inteira em hexágonos, com o ponto mais crítico destacado.
 function ArteRegiao({ dados }: { dados: Dados | null }) {
   const tela = useRef<HTMLCanvasElement>(null);
 
   const desenho = useMemo(() => {
     if (!dados) return null;
     const { hexagonos, meses, alvos } = dados.previsoes;
-    // nota média de risco (crime total) nos 12 meses do teste
     const valores = valoresDoFiltro(dados.previsoes, alvos[0].id, { tipo: 'tudo', mes: meses[0], ano: 0 });
     const cortes = calcularCortes(valores);
     const poligonos = dados.contornos.features.flatMap((f) => {
       const g = f.geometry as GeoJSON.Polygon | GeoJSON.MultiPolygon;
       return g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
     });
-    // enquadra pelos contornos da RMSP: a base tem algumas células geocodificadas fora da região, que encolheriam o desenho
     let x0 = 180, x1 = -180, y0 = 90, y1 = -90;
     for (const p of poligonos) for (const [x, y] of p[0]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
     const dentro = (anel: number[][]) => anel.every(([x, y]) => x >= x0 && x <= x1 && y >= y0 && y <= y1);
@@ -31,8 +29,7 @@ function ArteRegiao({ dados }: { dados: Dados | null }) {
     const escala = Math.min((W - 2 * MARGEM) / ((x1 - x0) * k), (H - 2 * MARGEM) / (y1 - y0));
     const ox = (W - (x1 - x0) * k * escala) / 2, oy = (H - (y1 - y0) * escala) / 2;
     const proj = (x: number, y: number): [number, number] => [ox + (x - x0) * k * escala, oy + (y1 - y) * escala];
-    // destaque: a maior nota entre as células que não concentram ocorrências sem endereço exato
-    let topo = idx.findIndex((i) => !hexagonos[i].imputado); // posição em idx
+    let topo = idx.findIndex((i) => !hexagonos[i].imputado);
     if (topo < 0) topo = 0;
     idx.forEach((i, k) => { if (!hexagonos[i].imputado && valores[i] > valores[idx[topo]]) topo = k; });
     const centro = aneis[topo].slice(0, 6).reduce(([a, b], [x, y]) => [a + x / 6, b + y / 6], [0, 0]);

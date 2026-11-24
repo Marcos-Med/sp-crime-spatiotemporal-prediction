@@ -1,3 +1,4 @@
+// Cabeçalho com o menu da página.
 export default function Cabecalho({ mock }: { mock: boolean }) {
   return (
     <header className="cabecalho">

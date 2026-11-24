@@ -1,9 +1,4 @@
-// ÚNICO ponto de acesso aos dados da página.
-// Lê os JSON de src/data/, gerados a partir dos resultados do modelo (scripts/gerar-previsoes.py e
-// scripts/gerar-municipios.py). Para servir por uma API, troque o corpo destas funções, por exemplo:
-//       const r = await fetch(`${API_URL}/previsoes`); return r.json();
-// O resto da página não precisa mudar.
-
+// Único ponto de acesso aos dados da página.
 import type {
   ArquivoMetricas,
   ArquivoPrevisoes,
@@ -39,7 +34,6 @@ export async function buscarMetricas(): Promise<ArquivoMetricas> {
   return metricas as ArquivoMetricas;
 }
 
-// Contornos dos 39 municípios da Região Metropolitana de São Paulo (não é mock).
 export async function buscarContornosMunicipios(): Promise<GeoJSON.FeatureCollection> {
   return contornos as GeoJSON.FeatureCollection;
 }

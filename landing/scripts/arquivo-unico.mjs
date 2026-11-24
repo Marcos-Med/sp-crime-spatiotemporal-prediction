@@ -1,4 +1,4 @@
-// Junta dist/ num único HTML que abre com dois cliques (sem servidor).
+// Junta o site compilado em um único HTML.
 import { readFileSync, writeFileSync } from 'node:fs';
 const css = readFileSync(new URL('../dist/assets/index.css', import.meta.url), 'utf8');
 const js = readFileSync(new URL('../dist/assets/app.js', import.meta.url), 'utf8').replace(/<\/script/gi, '<\\/script');

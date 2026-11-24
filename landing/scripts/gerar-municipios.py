@@ -1,12 +1,6 @@
-"""Gera src/data/municipios.json com dados REAIS da base do Marcos.
+"""Gera src/data/municipios.json.
 
-Uso:
-    python scripts/gerar-municipios.py <pasta do repo do Marcos>/datasets/database_processed_h3_final.csv
-
-O CSV sai do notebook processing_datasets/creating_features_ssp_sp.ipynb (pasta datasets/, fora do GitHub).
-Ele tem uma linha por hexágono e mês, com as contagens (CNT_CRIME, FURTO, ROUBO) e os dados do Censo 2022/IPVS
-já agregados por hexágono. Esses dados do Censo são MÉDIAS dos setores censitários de cada hexágono, então aqui
-só calculamos médias (IPVS, alfabetização, jovens). Somar população daria um número sem sentido.
+Uso: python scripts/gerar-municipios.py <datasets/database_processed_h3_final.csv>
 """
 import json
 import sys
@@ -20,7 +14,6 @@ RAIZ = Path(__file__).resolve().parent.parent
 CONTORNOS = RAIZ / 'src' / 'geo' / 'rmsp-municipios.json'
 SAIDA = RAIZ / 'src' / 'data' / 'municipios.json'
 
-# Abreviações usadas pela SSP-SP no nome das cidades
 APELIDOS = {
     'S.PAULO': 'SAO PAULO',
     'S.ANDRE': 'SANTO ANDRE',
@@ -39,20 +32,14 @@ def normalizar(nome: str) -> str:
 
 
 def dentro_da_rmsp(hexes) -> set:
-    """Hexágonos cujo centro cai dentro do contorno da RMSP.
-
-    A base do modelo filtra a região pelo nome da cidade do boletim, não pela coordenada. Por erro de geocodificação,
-    52 das 1.260 células ficam no interior do estado (89 ocorrências, 0,003%). A página não mostra essas células.
-    """
     from shapely.geometry import Point, shape
     from shapely.ops import unary_union
     geo = json.loads(CONTORNOS.read_text(encoding='utf-8'))
-    regiao = unary_union([shape(f['geometry']) for f in geo['features']]).buffer(0.02)  # ~2 km de folga na borda
+    regiao = unary_union([shape(f['geometry']) for f in geo['features']]).buffer(0.02)
     return {h for h in hexes if regiao.contains(Point(h3.cell_to_latlng(h)[::-1]))}
 
 
 def em_porcentagem(serie: pd.Series) -> pd.Series:
-    # aceita a coluna em fração (0 a 1) ou já em %
     return serie * 100 if serie.max() <= 1 else serie
 
 
@@ -68,7 +55,6 @@ def main(caminho: str) -> None:
           f'({int(df.loc[~df.H3.isin(dentro), "CNT_CRIME"].sum())} ocorrências)')
     df = df[df.H3.isin(dentro)]
 
-    # uma linha por hexágono: ocorrências somadas no período todo; Censo/IPVS são fixos por hexágono
     hex_ = df.groupby('H3').agg(
         CIDADE=('CIDADE', lambda s: s.mode().iloc[0] if not s.mode().empty else None),
         crime=('CNT_CRIME', 'sum'), furto=('FURTO', 'sum'), roubo=('ROUBO', 'sum'),

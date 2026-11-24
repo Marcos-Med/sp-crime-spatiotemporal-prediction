@@ -1,8 +1,9 @@
+// Painel com os dados do município selecionado.
 import type { MetadadosMunicipio } from '../../types/dados';
 import { CORES_RISCO, NOMES_RISCO, fmt } from '../../lib/cores';
 
 export interface ResumoMunicipio {
-  media: number; // nota média de risco dos hexágonos do município
+  media: number;
   porClasse: number[];
   maiorHex: { h3: string; valor: number } | null;
 }
